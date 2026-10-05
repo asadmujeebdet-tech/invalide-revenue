@@ -29,11 +29,12 @@ export async function GET(req:NextRequest){
   ]);
   const k=kpis.rows[0]||{},initial=Number(k.initial||0),latest=Number(k.latest||0),adjustment=Number(k.adjustment||0),map:any={};
   trend.rows.forEach((r:any)=>{map[r.date]??={date:r.date};map[r.date]["d"+r.day]=Number(r.revenue)});
-  const ret=retention.rows.map((r:any)=>({day:r.day,revenue:Number(r.revenue)})),d0=ret.find((x:any)=>x.day===0)?.revenue||0;ret.forEach((x:any)=>x.retention=d0?x.revenue/d0*100:null);
+  const ret:Array<{day:number;revenue:number;retention:number|null}>=retention.rows.map((r:any)=>({day:Number(r.day),revenue:Number(r.revenue),retention:null})),d0=ret.find(x=>x.day===0)?.revenue||0;
+  ret.forEach(x=>{x.retention=d0?x.revenue/d0*100:null});
   const status=(x:any)=>Math.abs(Number(x.adjustment_pct||0))>=10?"CRITICAL":Math.abs(Number(x.adjustment_pct||0))>=5?"HIGH":Math.abs(Number(x.adjustment_pct||0))>=2?"MEDIUM":"LOW";
   const appsOut=appRows.rows.map((x:any)=>({...x,status:status(x)})),adsOut=adRows.rows.map((x:any)=>({...x,status:status(x)}));
   const attention=[...appsOut.map((x:any)=>({...x,type:"App"})),...adsOut.map((x:any)=>({...x,type:"Ad Unit"}))].filter((x:any)=>x.status==="CRITICAL").slice(0,10);
-  const d4=ret.find((x:any)=>x.day===4)?.retention;
+  const d4=ret.find(x=>x.day===4)?.retention;
   const summary=initial===0&&latest===0?"No revenue data is available for the selected filters and period.":"Initial revenue is "+money(initial)+" and the latest available snapshot is "+money(latest)+". "+(appsOut[0]?appsOut[0].name+" is the largest app-level adjustment driver. ":"")+(d4!=null?"D4 retention is "+d4.toFixed(1)+"%.":"");
   return NextResponse.json({range:{start,end},filters:{platforms:platforms.rows.map((x:any)=>x.platform),apps:apps.rows,adUnits:ads.rows},kpis:{initial,latest,adjustment,adjustmentRate:initial?adjustment/initial*100:null,revenueAtRisk:initial-latest,affectedApps:appsOut.filter((x:any)=>x.initial!==0).length,affectedAdUnits:adsOut.filter((x:any)=>x.initial!==0).length},trend:Object.values(map),retention:ret,apps:appsOut,adUnits:adsOut,adjustmentIntelligence:adj.rows[0]||{},dataHealth:health.rows,attention,summary});
  }catch(e:any){return NextResponse.json({error:e.message||"Database query failed"},{status:500})}
