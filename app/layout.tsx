@@ -1,3 +1,14 @@
 import "./globals.css";
-export const metadata={title:"Invalid Revenue Intelligence",description:"Executive invalid revenue monitoring"};
-export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body>{children}</body></html>}
+
+export const metadata = {
+  title: "Invalid Revenue Intelligence",
+  description: "Executive invalid revenue monitoring",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body>{children}</body>
+    </html>
+  );
+}
