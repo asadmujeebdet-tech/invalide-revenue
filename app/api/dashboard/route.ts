@@ -1,0 +1,40 @@
+import {NextRequest,NextResponse} from "next/server";
+import {getPool} from "@/lib/db";
+export const dynamic="force-dynamic";
+const date=(d:Date)=>d.toISOString().slice(0,10);
+const days=(s:string,n:number)=>{const d=new Date(s+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+n);return date(d)};
+const money=(n:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(n||0);
+export async function GET(req:NextRequest){
+ try{
+  const u=new URL(req.url),end=u.searchParams.get("end")||date(new Date()),start=u.searchParams.get("start")||days(end,-29),app=u.searchParams.get("app")||"all",platform=u.searchParams.get("platform")||"all",entityType=u.searchParams.get("entityType")||"all",adUnit=u.searchParams.get("adUnit")||"all";
+  const p:any[]=[start,end],f:string[]=[];
+  if(app!=="all"){p.push(app);f.push("COALESCE(e.parent_app_id,e.entity_id)=$"+p.length)}
+  if(platform!=="all"){p.push(platform);f.push("e.platform=$"+p.length)}
+  if(entityType==="apps")f.push("e.entity_type='app'");
+  if(entityType==="ad_units")f.push("e.entity_type IN ('ad_unit','adunit','ad_unit_id')");
+  if(adUnit!=="all"){p.push(adUnit);f.push("e.entity_id=$"+p.length)}
+  const scope=f.length?" AND "+f.join(" AND "):"";
+  const pool=getPool();
+  const [platforms,apps,ads,kpis,trend,retention,appRows,adRows,adj,health]=await Promise.all([
+   pool.query("SELECT DISTINCT platform FROM entities WHERE platform IS NOT NULL ORDER BY 1"),
+   pool.query("SELECT entity_id::text id,name,platform FROM entities WHERE entity_type='app' OR parent_app_id IS NULL ORDER BY name"),
+   pool.query("SELECT entity_id::text id,name,parent_app_id::text app_id FROM entities WHERE entity_type IN ('ad_unit','adunit','ad_unit_id') ORDER BY name"),
+   pool.query(`WITH initial AS (SELECT rs.entity_id,SUM(rs.revenue) revenue FROM revenue_snapshots rs JOIN entities e ON e.entity_id=rs.entity_id WHERE rs.revenue_date BETWEEN $1 AND $2 AND rs.snapshot_day=0 ${scope} GROUP BY rs.entity_id), latest AS (SELECT DISTINCT ON(rs.entity_id,rs.revenue_date) rs.entity_id,rs.revenue FROM revenue_snapshots rs JOIN entities e ON e.entity_id=rs.entity_id WHERE rs.revenue_date BETWEEN $1 AND $2 ${scope} ORDER BY rs.entity_id,rs.revenue_date,rs.snapshot_day DESC,rs.snapshot_date DESC NULLS LAST), adj AS (SELECT a.entity_id,SUM(a.adjustment) adjustment FROM adjustments a JOIN entities e ON e.entity_id=a.entity_id WHERE a.revenue_date BETWEEN $1 AND $2 ${scope} GROUP BY a.entity_id) SELECT COALESCE((SELECT SUM(revenue) FROM initial),0)::float initial,COALESCE((SELECT SUM(revenue) FROM latest),0)::float latest,COALESCE((SELECT SUM(adjustment) FROM adj),0)::float adjustment`,p),
+   pool.query(`SELECT revenue_date::text date,snapshot_day::int day,SUM(revenue)::float revenue FROM revenue_snapshots rs JOIN entities e ON e.entity_id=rs.entity_id WHERE revenue_date BETWEEN $1 AND $2 ${scope} GROUP BY revenue_date,snapshot_day ORDER BY revenue_date,snapshot_day`,p),
+   pool.query(`SELECT snapshot_day::int day,SUM(revenue)::float revenue FROM revenue_snapshots rs JOIN entities e ON e.entity_id=rs.entity_id WHERE revenue_date BETWEEN $1 AND $2 AND snapshot_day BETWEEN 0 AND 4 ${scope} GROUP BY snapshot_day ORDER BY snapshot_day`,p),
+   pool.query(`WITH i AS(SELECT e.entity_id,e.name,e.platform,SUM(rs.revenue) FILTER(WHERE rs.snapshot_day=0)::float initial FROM entities e JOIN revenue_snapshots rs ON rs.entity_id=e.entity_id WHERE rs.revenue_date BETWEEN $1 AND $2 AND e.entity_type='app' ${scope} GROUP BY e.entity_id,e.name,e.platform),l AS(SELECT rs.entity_id,SUM(rs.revenue)::float latest FROM revenue_snapshots rs JOIN entities e ON e.entity_id=rs.entity_id WHERE rs.revenue_date BETWEEN $1 AND $2 ${scope} GROUP BY rs.entity_id),a AS(SELECT a.entity_id,SUM(a.adjustment)::float adjustment FROM adjustments a JOIN entities e ON e.entity_id=a.entity_id WHERE a.revenue_date BETWEEN $1 AND $2 ${scope} GROUP BY a.entity_id) SELECT i.entity_id::text id,i.name,i.platform,i.initial,COALESCE(l.latest,0)::float latest,i.initial-COALESCE(l.latest,0) loss,COALESCE(a.adjustment,0)::float adjustment,CASE WHEN i.initial<>0 THEN COALESCE(a.adjustment,0)/i.initial*100 END::float adjustment_pct FROM i LEFT JOIN l USING(entity_id) LEFT JOIN a USING(entity_id) ORDER BY ABS(COALESCE(a.adjustment,0)) DESC LIMIT 100`,p),
+   pool.query(`WITH i AS(SELECT e.entity_id,e.name,e.platform,SUM(rs.revenue) FILTER(WHERE rs.snapshot_day=0)::float initial FROM entities e JOIN revenue_snapshots rs ON rs.entity_id=e.entity_id WHERE rs.revenue_date BETWEEN $1 AND $2 AND e.entity_type IN ('ad_unit','adunit','ad_unit_id') ${scope} GROUP BY e.entity_id,e.name,e.platform),l AS(SELECT rs.entity_id,SUM(rs.revenue)::float latest FROM revenue_snapshots rs JOIN entities e ON e.entity_id=rs.entity_id WHERE rs.revenue_date BETWEEN $1 AND $2 ${scope} GROUP BY rs.entity_id),a AS(SELECT a.entity_id,SUM(a.adjustment)::float adjustment FROM adjustments a JOIN entities e ON e.entity_id=a.entity_id WHERE a.revenue_date BETWEEN $1 AND $2 ${scope} GROUP BY a.entity_id) SELECT i.entity_id::text id,i.name,i.platform,i.initial,COALESCE(l.latest,0)::float latest,i.initial-COALESCE(l.latest,0) loss,COALESCE(a.adjustment,0)::float adjustment,CASE WHEN i.initial<>0 THEN COALESCE(a.adjustment,0)/i.initial*100 END::float adjustment_pct FROM i LEFT JOIN l USING(entity_id) LEFT JOIN a USING(entity_id) ORDER BY ABS(COALESCE(a.adjustment,0)) DESC LIMIT 20`,p),
+   pool.query(`SELECT COALESCE(SUM(a.adjustment),0)::float total,COALESCE(AVG(a.adjustment_pct),0)::float avg,COALESCE(PERCENTILE_CONT(.5) WITHIN GROUP(ORDER BY a.adjustment_pct),0)::float median,COALESCE(MAX(ABS(a.adjustment)),0)::float largest,COUNT(DISTINCT a.entity_id)::int entities FROM adjustments a JOIN entities e ON e.entity_id=a.entity_id WHERE a.revenue_date BETWEEN $1 AND $2 ${scope}`,p),
+   pool.query("SELECT source,workflow_name,status,records_received,records_processed,records_failed,completed_at FROM ingestion_runs ORDER BY COALESCE(completed_at,started_at) DESC LIMIT 5")
+  ]);
+  const k=kpis.rows[0]||{},initial=Number(k.initial||0),latest=Number(k.latest||0),adjustment=Number(k.adjustment||0),map:any={};
+  trend.rows.forEach((r:any)=>{map[r.date]??={date:r.date};map[r.date]["d"+r.day]=Number(r.revenue)});
+  const ret=retention.rows.map((r:any)=>({day:r.day,revenue:Number(r.revenue)})),d0=ret.find((x:any)=>x.day===0)?.revenue||0;ret.forEach((x:any)=>x.retention=d0?x.revenue/d0*100:null);
+  const status=(x:any)=>Math.abs(Number(x.adjustment_pct||0))>=10?"CRITICAL":Math.abs(Number(x.adjustment_pct||0))>=5?"HIGH":Math.abs(Number(x.adjustment_pct||0))>=2?"MEDIUM":"LOW";
+  const appsOut=appRows.rows.map((x:any)=>({...x,status:status(x)})),adsOut=adRows.rows.map((x:any)=>({...x,status:status(x)}));
+  const attention=[...appsOut.map((x:any)=>({...x,type:"App"})),...adsOut.map((x:any)=>({...x,type:"Ad Unit"}))].filter((x:any)=>x.status==="CRITICAL").slice(0,10);
+  const d4=ret.find((x:any)=>x.day===4)?.retention;
+  const summary=initial===0&&latest===0?"No revenue data is available for the selected filters and period.":"Initial revenue is "+money(initial)+" and the latest available snapshot is "+money(latest)+". "+(appsOut[0]?appsOut[0].name+" is the largest app-level adjustment driver. ":"")+(d4!=null?"D4 retention is "+d4.toFixed(1)+"%.":"");
+  return NextResponse.json({range:{start,end},filters:{platforms:platforms.rows.map((x:any)=>x.platform),apps:apps.rows,adUnits:ads.rows},kpis:{initial,latest,adjustment,adjustmentRate:initial?adjustment/initial*100:null,revenueAtRisk:initial-latest,affectedApps:appsOut.filter((x:any)=>x.initial!==0).length,affectedAdUnits:adsOut.filter((x:any)=>x.initial!==0).length},trend:Object.values(map),retention:ret,apps:appsOut,adUnits:adsOut,adjustmentIntelligence:adj.rows[0]||{},dataHealth:health.rows,attention,summary});
+ }catch(e:any){return NextResponse.json({error:e.message||"Database query failed"},{status:500})}
+}
