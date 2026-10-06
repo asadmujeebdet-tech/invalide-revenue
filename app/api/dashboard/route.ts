@@ -75,9 +75,10 @@ export async function GET(req:NextRequest){
       ) x
       GROUP BY x.ad_unit_id`;
 
-    const [ai,al,trend,retention,appDaily,adi,adl]=await Promise.all([
+    const adDailySql=`SELECT s.ad_unit_id AS ad_unit_id,s.report_date::text AS date,s.snapshot_day::int AS day_index,SUM(s.revenue_micros)::float/1000000 AS revenue FROM ad_unit_revenue_snapshots s JOIN ad_units u ON u.ad_unit_id=s.ad_unit_id WHERE s.report_date BETWEEN $1 AND $2 AND s.snapshot_day BETWEEN 0 AND 4 GROUP BY s.ad_unit_id,s.report_date,s.snapshot_day ORDER BY s.ad_unit_id,s.report_date,s.snapshot_day`;
+    const [ai,al,trend,retention,appDaily,adDaily,adi,adl]=await Promise.all([
       pool.query(initialSql,p),pool.query(latestSql,p),pool.query(trendSql,p),
-      pool.query(retentionSql,p),pool.query(appDailySql,p),
+      pool.query(retentionSql,p),pool.query(appDailySql,p),pool.query(adDailySql,p),
       pool.query(adInitialSql,p),pool.query(adLatestSql,p)
     ]);
 
@@ -108,12 +109,13 @@ export async function GET(req:NextRequest){
       trendMap[r.date]["d"+r.day_index]=num(r.revenue);
     }
 
-    const dailyMap:any={};
+    const dailyMap:any={}; const appDayTotals:any={};
     for(const r of appDaily.rows){
       dailyMap[String(r.app_id)]??={};
       dailyMap[String(r.app_id)][r.date]??={date:r.date};
-      dailyMap[String(r.app_id)][r.date]["d"+r.day_index]=num(r.revenue);
+      dailyMap[String(r.app_id)][r.date]["d"+r.day_index]=num(r.revenue); appDayTotals[String(r.app_id)]??={}; appDayTotals[String(r.app_id)]["d"+r.day_index]=(appDayTotals[String(r.app_id)]["d"+r.day_index]||0)+num(r.revenue);
     }
+    const adDailyMap:any={}; for(const r of adDaily.rows){adDailyMap[String(r.ad_unit_id)]??={};adDailyMap[String(r.ad_unit_id)][r.date]??={date:r.date};adDailyMap[String(r.ad_unit_id)][r.date]["d"+r.day_index]=num(r.revenue);}
 
     const d0=num(retention.rows.find((r:any)=>r.day_index===0)?.revenue);
     const retentionOut=retention.rows.map((r:any)=>({
@@ -135,6 +137,8 @@ export async function GET(req:NextRequest){
       apps:appsOut,
       adUnits:adOut,
       appDaily:dailyMap,
+      appDayTotals,
+      adDaily:adDailyMap,
       attention:critical
     });
   }catch(e:any){
