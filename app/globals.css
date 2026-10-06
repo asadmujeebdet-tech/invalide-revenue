@@ -78,3 +78,45 @@ th.sortable{cursor:pointer;user-select:none}th.sortable:hover,th.sorted{color:va
 .panelBody{padding:22px 24px 30px;overflow:auto;flex:1}.panelBody h4{font-size:13px;margin:24px 0 12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
 .pStats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.pStats div{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:14px}.pStats span{font-size:12px;color:var(--muted)}.pStats b{display:block;font-size:21px;margin-top:4px;letter-spacing:-.5px}
 .pRow{display:flex;justify-content:space-between;align-items:center;padding:14px 2px 0;font-size:13px;color:var(--muted)}
+
+/* App workspace v4 */
+.sidebar nav button{position:relative;gap:10px}
+.sidebar nav button.active{background:linear-gradient(90deg,rgba(123,123,255,.18),rgba(123,123,255,.06));color:#fff}
+.navChevron{margin-left:auto;opacity:.35;display:grid;place-items:center;transition:transform .2s,opacity .2s}
+.sidebar nav button:hover .navChevron,.sidebar nav button.active .navChevron{opacity:1;transform:translateX(3px)}
+.appIcon{position:relative;flex:0 0 34px;width:34px;height:34px;border-radius:9px;overflow:hidden;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);border:1px solid var(--line);box-shadow:0 3px 10px rgba(0,0,0,.08)}
+.appIcon img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;z-index:2}
+.appIcon .fallbackIcon{display:grid;place-items:center;position:absolute;inset:0}
+.appIcon.large{width:52px;height:52px;flex-basis:52px;border-radius:14px;box-shadow:0 8px 22px rgba(0,0,0,.12)}
+.titleRow{display:flex;align-items:center;gap:14px}
+.titleRow .eyebrow{margin-bottom:5px}
+.dateSelect{display:flex;flex-direction:column;gap:4px;min-width:148px}
+.dateSelect span,.dateField span{font-size:10px;text-transform:uppercase;letter-spacing:.7px;font-weight:700;color:var(--faint);padding-left:2px}
+.dateSelect select,.dateField input{height:40px;border:1px solid var(--line);border-radius:11px;background:var(--surface);padding:0 12px;outline:0;font-size:13px;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.03);transition:.18s}
+.dateSelect select:focus,.dateField input:focus{border-color:var(--accent);box-shadow:var(--ring)}
+.dateField{display:flex;flex-direction:column;gap:4px}
+.dateField input{min-width:142px;color-scheme:light dark}
+.dateArrow{align-self:flex-end;height:40px;display:grid;place-items:center;color:var(--accent);font-weight:700;font-size:17px;padding:0 1px}
+.filters{align-items:flex-end}
+.filters .btn{height:40px}
+.appRight{display:flex;align-items:center;gap:12px}
+.appRight>div{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.appRight>div span{font-size:11px;color:var(--muted)}
+.appRight>div b{font-size:19px;letter-spacing:-.4px}
+.journey{display:flex;align-items:stretch;gap:0;padding:22px 24px}
+.journeyStep{display:flex;align-items:center;min-width:0;flex:1;animation:journeyIn .45s both}
+.journeyStep:nth-child(2){animation-delay:.06s}.journeyStep:nth-child(3){animation-delay:.12s}.journeyStep:nth-child(4){animation-delay:.18s}.journeyStep:nth-child(5){animation-delay:.24s}
+.stepCard{min-width:0;flex:1}
+.journeyArrow{width:32px;flex:0 0 32px;display:flex;align-items:center;justify-content:center;color:var(--accent);position:relative}
+.journeyArrow:before{content:"";position:absolute;left:2px;right:2px;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.35}
+.journeyArrow svg{position:relative;background:var(--surface);padding:2px;z-index:1;animation:arrowPulse 1.8s ease-in-out infinite}
+@keyframes journeyIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+@keyframes arrowPulse{0%,100%{transform:translateX(0);opacity:.55}50%{transform:translateX(4px);opacity:1}}
+.appCard{animation:cardIn .35s ease both}
+@keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.kpi,.card{transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.kpi:hover,.appCard:hover{transform:translateY(-2px)}
+.dateField input::-webkit-calendar-picker-indicator{opacity:.7;cursor:pointer}
+@media(max-width:1100px){.filters{width:100%;justify-content:flex-start}.head{gap:18px}.head>.filters{margin-top:4px}}
+@media(max-width:760px){.titleRow{align-items:flex-start}.titleRow .appIcon.large{width:44px;height:44px;flex-basis:44px}.dateSelect,.dateField{flex:1;min-width:0}.dateField input{min-width:0;width:100%}.dateArrow{display:none}.filters{display:grid;grid-template-columns:1fr 1fr;align-items:end}.dateSelect{grid-column:1/-1}.filters .btn{width:100%}.journey{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:18px 16px}.journeyStep{display:block}.journeyArrow{display:none}.appRight{width:100%;justify-content:flex-end}.appTop{align-items:flex-start}}
+@media(max-width:500px){.filters{grid-template-columns:1fr}.dateSelect{grid-column:auto}.hRight .btn:first-of-type{display:none}.appRight .appIcon{display:none}.kpis{grid-template-columns:1fr 1fr}}
