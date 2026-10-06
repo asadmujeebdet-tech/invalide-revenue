@@ -23,6 +23,7 @@ const money=(n:any)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"U
 const pct=(n:any)=>n==null?"—":Number(n).toFixed(1)+"%";
 const iso=(d:Date)=>d.toISOString().slice(0,10);
 const imgFor=(name:string)=>icons[name];
+const themeFor=(name:string)=>{const n=name.toLowerCase();if(n.includes("antivirus"))return "security";if(n.includes("gps")||n.includes("navigation")||n.includes("map"))return "navigation";if(n.includes("cleaner")||n.includes("junk"))return "cleaner";if(n.includes("video"))return "media";return "finance"};
 
 function Status({value}:{value:string}){return <span className={"badge "+String(value).toLowerCase()}><i/>{value}</span>}
 function Img({name,large=false}:{name:string;large?:boolean}){return <span className={"appIcon"+(large?" large":"")}><img src={imgFor(name)||""} alt="" onError={e=>{(e.currentTarget as HTMLImageElement).style.display="none"}}/><span className="fallbackIcon"><Icon t="layers" s={large?19:15}/></span></span>}
@@ -54,7 +55,7 @@ export default function AppRevenuePage(){
  if(!app)return <div className="center"><div className="card state"><b>App not found</b><span>This app has no revenue data for the selected period.</span></div></div>;
  const ret=(d.retention||[]).map((r:any)=>({name:"D"+r.day,revenue:r.revenue,retention:r.retention}));
  const exportCsv=()=>{const rows=d.adUnits||[],head=["Date","Ad unit",...days,"At risk"];const all=rows.flatMap((ad:any)=>Object.entries(d.adDaily?.[String(ad.id)]||{}).map(([date,v]:any)=>[date,ad.name,...days.map((_,i)=>v["d"+i]??""),ad.loss]));const blob=new Blob([[head,...all].map((r:any)=>r.map((x:any)=>JSON.stringify(x??"")).join(",")).join("\n")],{type:"text/csv"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=app.name+"_revenue.csv";a.click();URL.revokeObjectURL(a.href)};
- return <div className="app">
+ return <div className={"app appTheme-"+themeFor(app.name)}>
   <div className={"scrim"+(nav?" show":"")} onClick={()=>setNav(false)}/>
   <aside className={"sidebar"+(nav?" open":"")}>
    <div className="brand"><div className="logo">IR</div><div><b>Invalid Revenue</b><small>Revenue Intelligence</small></div></div>
