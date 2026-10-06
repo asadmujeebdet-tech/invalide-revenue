@@ -162,3 +162,16 @@ th.sortable{cursor:pointer;user-select:none}th.sortable:hover,th.sorted{color:va
 /* Desktop header architecture: no dashboard header scrolling */
 @media(min-width:1101px){.head.singleRow{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:28px}.head.singleRow .titleRow{min-width:0}.head.singleRow .filters{min-width:0;flex-wrap:nowrap}.head.singleRow .dateSelect{min-width:142px}.head.singleRow .dateField input{width:136px;min-width:136px}.head.singleRow .filters .btn{white-space:nowrap}}
 @media(max-width:1100px) and (min-width:761px){.head.singleRow{display:flex;align-items:center}.head.singleRow .titleRow{min-width:280px;flex:1}.head.singleRow .filters{width:auto;flex:0 0 auto;flex-wrap:wrap;justify-content:flex-end}}
+
+/* Laptop-safe header layout: keep every filter control inside the viewport */
+@media(min-width:1101px) and (max-width:1450px){
+  .head.singleRow{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:center}
+  .head.singleRow .titleRow{min-width:0;width:100%}
+  .head.singleRow .titleRow h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .head.singleRow .filters{width:100%;display:flex;justify-content:flex-start;align-items:flex-end;gap:10px;flex-wrap:nowrap}
+  .head.singleRow .dateSelect{min-width:0;width:170px}
+  .head.singleRow .dateField{min-width:0;flex:0 1 140px}
+  .head.singleRow .dateField input{width:100%;min-width:0}
+  .head.singleRow .dateArrow{flex:0 0 18px}
+  .head.singleRow .filters .btn{flex:0 0 auto}
+}
