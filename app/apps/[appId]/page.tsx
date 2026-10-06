@@ -41,10 +41,10 @@ export default function AppRevenuePage(){
  const load=async(s=start,e=end)=>{try{setLoading(true);setErr("");const r=await fetch("/api/dashboard?"+new URLSearchParams({start:s,end:e,appId}),{cache:"no-store"});const j=await r.json();if(!r.ok)throw Error(j.error);setD(j)}catch(e:any){setErr(e.message||"Unable to load dashboard")}finally{setLoading(false)}};
  useEffect(()=>{const t=localStorage.getItem("ir-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");setTheme(t);const [s,e]=rangeFor("7")!;setStart(s);setEnd(e)},[]);
  useEffect(()=>{document.documentElement.dataset.theme=theme;localStorage.setItem("ir-theme",theme)},[theme]);
- useEffect(()=>{if(start&&end)load(start,end)},[appId,start,end]);
+ useEffect(()=>{if(start&&end)load(start,end)},[appId]);
  const apps=useMemo(()=>((d?.filters?.apps)||[]).filter((a:any)=>a.name.toLowerCase().includes(q.toLowerCase())),[d,q]);
  const app=d?.apps?.[0];
- const applyPreset=(v:string)=>{setPreset(v);const r=rangeFor(v);if(r){setStart(r[0]);setEnd(r[1])}};
+ const applyPreset=(v:string)=>{setPreset(v);const r=rangeFor(v);if(r){setStart(r[0]);setEnd(r[1]);load(r[0],r[1])}};
  const applyDates=()=>load(start,end);
  if(!d&&!err)return <div className="center"><div className="card state"><div className="spinner"/><b>Loading revenue intelligence</b><span>Preparing the selected app workspace…</span></div></div>;
  if(err&&!d)return <div className="center"><div className="card state"><Icon t="alert" s={22}/><b>Unable to load workspace</b><span>{err}</span><button className="btn primary" onClick={()=>load(start,end)}>Retry</button></div></div>;
