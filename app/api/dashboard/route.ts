@@ -21,7 +21,7 @@ export async function GET(req:NextRequest){
     const initialSql=`SELECT s.app_id AS id,SUM(s.revenue_micros)::float/1000000 initial
       FROM app_revenue_snapshots s
       JOIN apps a ON a.app_id=s.app_id
-      WHERE s.report_date BETWEEN $1 AND $2 AND s.snapshot_day=0
+      WHERE s.report_date BETWEEN $1 AND $2 AND s.snapshot_day=0 AND ($3::text IS NULL OR s.app_id::text=$3)
       GROUP BY s.app_id`;
 
     const latestSql=`SELECT x.app_id AS id,SUM(x.revenue_micros)::float/1000000 latest
