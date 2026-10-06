@@ -37,9 +37,10 @@ function rangeFor(v:string){
 
 export default function AppRevenuePage(){
  const params=useParams<{appId:string}>(),router=useRouter(),appId=String(params.appId);
- const[d,setD]=useState<any>(null),[err,setErr]=useState(""),[loading,setLoading]=useState(true),[start,setStart]=useState(""),[end,setEnd]=useState(""),[preset,setPreset]=useState("7"),[theme,setTheme]=useState("light"),[nav,setNav]=useState(false),[q,setQ]=useState(""),[panel,setPanel]=useState<any>(null),[on,setOn]=useState([true,true,true,true,true]);
+ const initialRange=rangeFor("7")!,
+ [d,setD]=useState<any>(null),[err,setErr]=useState(""),[loading,setLoading]=useState(true),[start,setStart]=useState(initialRange[0]),[end,setEnd]=useState(initialRange[1]),[preset,setPreset]=useState("7"),[theme,setTheme]=useState("light"),[nav,setNav]=useState(false),[q,setQ]=useState(""),[panel,setPanel]=useState<any>(null),[on,setOn]=useState([true,true,true,true,true]);
  const load=async(s=start,e=end)=>{try{setLoading(true);setErr("");const r=await fetch("/api/dashboard?"+new URLSearchParams({start:s,end:e,appId}),{cache:"no-store"});const j=await r.json();if(!r.ok)throw Error(j.error);setD(j)}catch(e:any){setErr(e.message||"Unable to load dashboard")}finally{setLoading(false)}};
- useEffect(()=>{const t=localStorage.getItem("ir-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");setTheme(t);const [s,e]=rangeFor("7")!;setStart(s);setEnd(e)},[]);
+ useEffect(()=>{const t=localStorage.getItem("ir-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");setTheme(t)},[]);
  useEffect(()=>{document.documentElement.dataset.theme=theme;localStorage.setItem("ir-theme",theme)},[theme]);
  useEffect(()=>{if(start&&end)load(start,end)},[appId]);
  const apps=useMemo(()=>((d?.filters?.apps)||[]).filter((a:any)=>a.name.toLowerCase().includes(q.toLowerCase())),[d,q]);
