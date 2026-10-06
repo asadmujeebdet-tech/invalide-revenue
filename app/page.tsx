@@ -1,17 +1,145 @@
 "use client";
-import {useEffect,useMemo,useState} from "react";import {ResponsiveContainer,LineChart,Line,XAxis,YAxis,Tooltip,CartesianGrid,BarChart,Bar} from "recharts";
-const money=(n:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",notation:"compact",maximumFractionDigits:1}).format(n||0);const pct=(n:any)=>n==null?"—":Number(n).toFixed(1)+"%";
-const nav=[["overview","Overview","⌂"],["revenue","Revenue","◈"],["apps","Apps","▦"],["adunits","Ad Units","▤"],["adjustments","Adjustments","↗"],["trends","Trends","⌁"]];
-function KPI({label,value,meta,danger=false}:{label:string;value:string;meta:string;danger?:boolean}){return <div className="kpi"><span>{label}</span><b className={danger?"danger":""}>{value}</b><small>{meta}</small></div>}
-function Title({eyebrow,title,sub}:{eyebrow:string;title:string;sub:string}){return <div className="sectionTitle"><small>{eyebrow}</small><h2>{title}</h2><p>{sub}</p></div>}
-export default function Dashboard(){const[d,setD]=useState<any>();const[err,setErr]=useState("");const[start,setStart]=useState("");const[end,setEnd]=useState("");const[app,setApp]=useState("all");const[ad,setAd]=useState("all");const[section,setSection]=useState("overview");const[loading,setLoading]=useState(false);const[dark,setDark]=useState(false);
-const load=async()=>{try{setLoading(true);setErr("");const now=new Date(),e=end||now.toISOString().slice(0,10),s=start||new Date(now.getTime()-29*86400000).toISOString().slice(0,10);const q=new URLSearchParams({start:s,end:e,app,adUnit:ad});const r=await fetch("/api/dashboard?"+q);const j=await r.json();if(!r.ok)throw Error(j.error);setD(j);setStart(s);setEnd(e)}catch(e:any){setErr(e.message||"Unable to load dashboard")}finally{setLoading(false)}};
-useEffect(()=>{load()},[]);useEffect(()=>{document.documentElement.dataset.theme=dark?"dark":"light"},[dark]);const trend=useMemo(()=>d?.trend||[],[d]);const title=nav.find(x=>x[0]===section)?.[1]||"Overview";if(err&&!d)return <div className="error"><b>Unable to load workspace</b><span>{err}</span><button onClick={load}>Retry</button></div>;if(!d)return <div className="error"><b>Loading Revenue Intelligence</b><span>Connecting to your database…</span></div>;const k=d.kpis;
-return <div className="app"><aside className="sidebar"><div className="brand"><div>IR</div><section><b>Invalid Revenue</b><small>INTELLIGENCE</small></section></div><div className="workspace"><i/>Executive Workspace</div><nav><label>WORKSPACE</label>{nav.map(x=><button key={x[0]} className={section===x[0]?"active":""} onClick={()=>setSection(x[0])}><i>{x[2]}</i>{x[1]}</button>)}</nav><div className="sideFoot">Revenue Intelligence<br/><small>Financial analytics workspace</small></div></aside>
-<main><header><button className="mobile">☰</button><div className="crumb">Revenue Intelligence <span>/</span> <b>{title}</b></div><div className="actions"><span className="connected"><i/> Database connected</span><button onClick={()=>setDark(!dark)}>{dark?"☼":"◐"}</button><button onClick={load}>↻</button></div></header><div className="page"><div className="head"><div><small>EXECUTIVE ANALYTICS</small><h1>{title}</h1><p>Monitor revenue exposure, adjustment impact and D0–D4 retention across the portfolio.</p></div><button className="primary" onClick={load}>{loading?"Refreshing…":"Refresh data"}</button></div>
-<div className="filters"><div><small>ANALYSIS PERIOD</small><b>Portfolio filters</b></div><label>From<input type="date" value={start} onChange={e=>setStart(e.target.value)}/></label><label>To<input type="date" value={end} onChange={e=>setEnd(e.target.value)}/></label><label>Application<select value={app} onChange={e=>{setApp(e.target.value);setAd("all")}}><option value="all">All applications</option>{d.filters.apps.map((x:any)=><option key={x.id} value={x.id}>{x.name}</option>)}</select></label><label>Ad Unit<select value={ad} onChange={e=>setAd(e.target.value)}><option value="all">All ad units</option>{d.filters.adUnits.filter((x:any)=>app==="all"||x.app_id===app).map((x:any)=><option key={x.id} value={x.id}>{x.name}</option>)}</select></label><button onClick={load}>Apply</button></div>
-{section==="overview"&&<><div className="hero"><div><small>PORTFOLIO SIGNAL</small><h2>{k.risk>0?"Revenue exposure requires attention":"Portfolio is currently stable"}</h2><p>{k.risk>0?"The selected period shows revenue reduction between the initial D0 report and the latest available snapshot.":"No measurable revenue reduction is present in the selected period."}</p></div><div><small>REVENUE AT RISK</small><strong>{money(k.risk)}</strong><span>{pct(k.rate)} of initial revenue</span></div></div><div className="kpis"><KPI label="Initial Revenue" value={money(k.initial)} meta="D0 baseline"/><KPI label="Latest Revenue" value={money(k.latest)} meta="Latest available snapshot"/><KPI label="Revenue at Risk" value={money(k.risk)} meta="Initial − latest" danger/><KPI label="Adjustment Rate" value={pct(k.rate)} meta="Risk / initial" danger/><KPI label="Affected Apps" value={String(k.affectedApps)} meta="With measurable loss"/><KPI label="Affected Ad Units" value={String(k.affectedAdUnits)} meta="With measurable loss"/></div><div className="two"><section className="panel"><Title eyebrow="EXPOSURE" title="Revenue retention trend" sub="Initial D0 versus latest available snapshot by report date"/><div className="chart"><ResponsiveContainer width="100%" height="100%"><LineChart data={trend}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="date" tick={{fontSize:10}}/><YAxis tick={{fontSize:10}}/><Tooltip formatter={(v:any)=>money(Number(v))}/><Line type="monotone" dataKey="d0" name="Initial D0" stroke="var(--mutedLine)" strokeWidth={2} dot={false}/><Line type="monotone" dataKey={(r:any)=>Math.max(r.d0||0,r.d1||0,r.d2||0,r.d3||0,r.d4||0)} name="Latest" stroke="var(--accent)" strokeWidth={3} dot={false}/></LineChart></ResponsiveContainer></div></section><section className="panel"><Title eyebrow="RECOVERY" title="D0 → D4 retention" sub="Revenue retained against initial D0"/><div className="retention">{d.retention.map((x:any)=><div className="ret" key={x.day}><b>D{x.day}</b><strong>{pct(x.retention)}</strong><div><i style={{width:Math.min(100,Math.max(0,x.retention||0))+"%"}}/></div></div>)}</div></section></div><div className="two"><section className="panel"><Title eyebrow="EXECUTIVE RISK" title="CEO attention required" sub="Highest financial-impact entities"/>{d.attention.length?d.attention.map((x:any)=><div className="exception" key={x.type+x.id}><i className={"dot "+x.status.toLowerCase()}/><div><b>{x.name}</b><small>{x.type} · {money(x.loss)} revenue at risk · {pct(x.rate)}</small></div><span>{x.status}</span></div>):<div className="empty">No material exceptions for this period.</div>}</section><section className="panel"><Title eyebrow="IMPACT" title="Top apps by adjustment" sub="Ranked by revenue at risk"/><div className="chart mini"><ResponsiveContainer width="100%" height="100%"><BarChart data={d.apps.slice(0,7).map((x:any)=>({name:x.name.length>17?x.name.slice(0,17)+"…":x.name,value:x.loss}))} layout="vertical"><XAxis type="number" hide/><YAxis dataKey="name" type="category" width={105} tick={{fontSize:9}}/><Tooltip formatter={(v:any)=>money(Number(v))}/><Bar dataKey="value" fill="var(--accent)" radius={[0,5,5,0]}/></BarChart></ResponsiveContainer></div></section></div></>}
-{section==="revenue"&&<><Title eyebrow="REVENUE INTELLIGENCE" title="Revenue exposure & recovery" sub="Latest available snapshot logic is applied per app and report date."/><div className="kpis"><KPI label="Initial Revenue" value={money(k.initial)} meta="D0"/><KPI label="Latest Revenue" value={money(k.latest)} meta="Latest snapshot"/><KPI label="Revenue at Risk" value={money(k.risk)} meta="Initial − latest" danger/><KPI label="Adjustment Rate" value={pct(k.rate)} meta="Portfolio"/></div><section className="panel"><Title eyebrow="TREND" title="Revenue timeline" sub="D0 and latest available revenue"/><div className="chart tall"><ResponsiveContainer width="100%" height="100%"><LineChart data={trend}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="date"/><YAxis/><Tooltip formatter={(v:any)=>money(Number(v))}/><Line dataKey="d0" name="Initial D0" stroke="var(--mutedLine)" strokeWidth={2} dot={false}/><Line dataKey={(r:any)=>Math.max(r.d0||0,r.d1||0,r.d2||0,r.d3||0,r.d4||0)} name="Latest" stroke="var(--accent)" strokeWidth={3} dot={false}/></LineChart></ResponsiveContainer></div></section></>}
-{section==="apps"&&<><Title eyebrow="PORTFOLIO" title="Apps" sub="Applications ranked by financial impact."/><Table rows={d.apps} kind="app"/></>}{section==="adunits"&&<><Title eyebrow="MONETIZATION" title="Ad Units" sub="Ad units ranked by financial impact."/><Table rows={d.adUnits} kind="ad"/></>}{section==="adjustments"&&<><Title eyebrow="FINANCIAL CONTROL" title="Adjustments" sub="Revenue-at-risk intelligence derived from D0 versus latest snapshots."/><div className="kpis"><KPI label="Total At Risk" value={money(k.risk)} meta="Selected period" danger/><KPI label="Adjustment Rate" value={pct(k.rate)} meta="Portfolio"/><KPI label="Affected Apps" value={String(k.affectedApps)} meta="Loss > 0"/><KPI label="Affected Ad Units" value={String(k.affectedAdUnits)} meta="Loss > 0"/></div><Table rows={d.apps} kind="app"/></>}{section==="trends"&&<><Title eyebrow="TRENDS" title="Revenue & retention trends" sub="Track financial exposure and D0–D4 recovery over time."/><section className="panel"><Title eyebrow="REVENUE" title="Initial versus latest revenue" sub="Latest means the highest snapshot day actually available for each report date."/><div className="chart tall"><ResponsiveContainer width="100%" height="100%"><LineChart data={trend}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="date"/><YAxis/><Tooltip formatter={(v:any)=>money(Number(v))}/><Line dataKey="d0" name="D0" stroke="var(--mutedLine)" strokeWidth={2} dot={false}/><Line dataKey={(r:any)=>Math.max(r.d0||0,r.d1||0,r.d2||0,r.d3||0,r.d4||0)} name="Latest" stroke="var(--accent)" strokeWidth={3} dot={false}/></LineChart></ResponsiveContainer></div></section></>}
-</div></main></div>}
-function Table({rows,kind}:{rows:any[];kind:string}){return <section className="panel tablePanel"><div className="tableWrap"><table><thead><tr><th>{kind==="app"?"Application":"Ad Unit"}</th><th>Initial Revenue</th><th>Latest Revenue</th><th>Revenue at Risk</th><th>Adjustment %</th><th>Status</th></tr></thead><tbody>{rows.map(x=><tr key={x.id}><td><b>{x.name}</b></td><td>{money(x.initial)}</td><td>{money(x.latest)}</td><td className="risk">{money(x.loss)}</td><td>{pct(x.rate)}</td><td><span className={"badge "+x.status.toLowerCase()}>{x.status}</span></td></tr>)}</tbody></table></div></section>}
+import {useEffect,useMemo,useState} from "react";
+import {ResponsiveContainer,LineChart,Line,XAxis,YAxis,Tooltip,CartesianGrid,Legend} from "recharts";
+
+const money=(n:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",notation:"compact",maximumFractionDigits:1}).format(n||0);
+const pct=(n:any)=>n==null?"—":Number(n).toFixed(1)+"%";
+const dayLabels=["D0","D1","D2","D3","D4"];
+
+function KPI({label,value,meta,danger=false}:{label:string;value:string;meta:string;danger?:boolean}){
+  return <div className="kpi"><span>{label}</span><b className={danger?"danger":""}>{value}</b><small>{meta}</small></div>
+}
+function SectionTitle({eyebrow,title,sub}:{eyebrow:string;title:string;sub:string}){
+  return <div className="sectionTitle"><small>{eyebrow}</small><h2>{title}</h2><p>{sub}</p></div>
+}
+function Status({value}:{value:string}){return <span className={"badge "+value.toLowerCase()}>{value}</span>}
+
+export default function Dashboard(){
+  const[d,setD]=useState<any>();const[err,setErr]=useState("");
+  const[start,setStart]=useState("");const[end,setEnd]=useState("");
+  const[loading,setLoading]=useState(false);const[selectedApp,setSelectedApp]=useState<string|null>(null);
+
+  const load=async()=>{
+    try{
+      setLoading(true);setErr("");
+      const now=new Date();
+      const e=end||now.toISOString().slice(0,10);
+      const s=start||new Date(now.getTime()-29*86400000).toISOString().slice(0,10);
+      const q=new URLSearchParams({start:s,end:e});
+      const r=await fetch("/api/dashboard?"+q);
+      const j=await r.json();
+      if(!r.ok)throw Error(j.error);
+      setD(j);setStart(s);setEnd(e);
+    }catch(e:any){setErr(e.message||"Unable to load dashboard")}
+    finally{setLoading(false)}
+  };
+
+  useEffect(()=>{load()},[]);
+  const trend=useMemo(()=>d?.trend||[],[d]);
+  if(err&&!d)return <div className="error"><b>Unable to load workspace</b><span>{err}</span><button onClick={load}>Retry</button></div>;
+  if(!d)return <div className="error"><b>Loading Revenue Intelligence</b><span>Connecting to your database…</span></div>;
+  const k=d.kpis;
+
+  const scrollToApp=(id:string)=>{
+    setSelectedApp(id);
+    document.getElementById("app-"+id)?.scrollIntoView({behavior:"smooth",block:"start"});
+  };
+
+  return <div className="app">
+    <aside className="sidebar">
+      <div className="brand"><div>IR</div><section><b>Invalid Revenue</b><small>REVENUE INTELLIGENCE</small></section></div>
+      <div className="sideHeading">YOUR APPS</div>
+      <nav>{d.apps.map((a:any)=><button key={a.id} className={selectedApp===String(a.id)?"active":""} onClick={()=>scrollToApp(String(a.id))}>
+        <span className="appDot"/><span className="appName">{a.name}</span><span className="appLoss">{money(a.loss)}</span>
+      </button>)}</nav>
+      <div className="sideFoot"><span className="liveDot"/> Live revenue workspace</div>
+    </aside>
+
+    <main>
+      <header>
+        <div className="crumb"><b>Revenue Intelligence</b><span>·</span>{d.apps.length} apps</div>
+        <button className="refresh" onClick={load}>{loading?"Refreshing…":"↻ Refresh Data"}</button>
+      </header>
+
+      <div className="page">
+        <div className="head">
+          <div><small>PORTFOLIO OVERVIEW</small><h1>Revenue at a glance</h1>
+          <p>See the complete revenue journey for every app, from D0 through D4, without switching filters.</p></div>
+        </div>
+
+        <div className="filters">
+          <div className="filterTitle"><small>REVENUE DATE</small><b>Choose the revenue reporting period</b></div>
+          <label>From<input type="date" value={start} onChange={e=>setStart(e.target.value)}/></label>
+          <label>To<input type="date" value={end} onChange={e=>setEnd(e.target.value)}/></label>
+          <button onClick={load}>Apply</button>
+        </div>
+
+        <div className="kpis">
+          <KPI label="Initial Revenue" value={money(k.initial)} meta="D0 across selected revenue dates"/>
+          <KPI label="Latest Revenue" value={money(k.latest)} meta="Latest available D0–D4 snapshot"/>
+          <KPI label="Revenue at Risk" value={money(k.risk)} meta="Initial minus latest" danger/>
+          <KPI label="Adjustment Rate" value={pct(k.rate)} meta="Risk as % of initial" danger/>
+          <KPI label="Apps with Risk" value={String(k.affectedApps)} meta={"of "+d.apps.length+" apps"}/>
+          <KPI label="Ad Units with Risk" value={String(k.affectedAdUnits)} meta="Across all apps"/>
+        </div>
+
+        <section className="panel trendPanel">
+          <SectionTitle eyebrow="PORTFOLIO TREND" title="Revenue journey by reporting date" sub="Each line is a snapshot day. The horizontal axis is the revenue date — not the snapshot date."/>
+          <div className="chart trendChart"><ResponsiveContainer width="100%" height="100%">
+            <LineChart data={trend} margin={{top:8,right:18,left:4,bottom:4}}>
+              <CartesianGrid strokeDasharray="3 3"/>
+              <XAxis dataKey="date" tick={{fontSize:10}} tickFormatter={(v)=>String(v).slice(5)}/>
+              <YAxis tick={{fontSize:10}} tickFormatter={(v)=>money(Number(v))}/>
+              <Tooltip labelFormatter={(v)=>"Revenue date: "+v} formatter={(v:any,n:any)=>[money(Number(v)),n.toUpperCase()]}/>
+              <Legend wrapperStyle={{fontSize:10}}/>
+              <Line type="monotone" dataKey="d0" name="D0" stroke="var(--lineD0)" strokeWidth={2.5} dot={false} connectNulls/>
+              <Line type="monotone" dataKey="d1" name="D1" stroke="var(--lineD1)" strokeWidth={2.5} dot={false} connectNulls/>
+              <Line type="monotone" dataKey="d2" name="D2" stroke="var(--lineD2)" strokeWidth={2.5} dot={false} connectNulls/>
+              <Line type="monotone" dataKey="d3" name="D3" stroke="var(--lineD3)" strokeWidth={2.5} dot={false} connectNulls/>
+              <Line type="monotone" dataKey="d4" name="D4" stroke="var(--lineD4)" strokeWidth={2.5} dot={false} connectNulls/>
+            </LineChart>
+          </ResponsiveContainer></div>
+        </section>
+
+        <div className="appsHeader"><div><small>APP-BY-APP INTELLIGENCE</small><h2>Complete revenue picture</h2><p>Every app includes D0–D4 movement and its ad units.</p></div><span>{d.apps.length} apps</span></div>
+
+        <div className="appList">
+          {d.apps.map((app:any)=>(
+            <AppCard key={app.id} app={app} adUnits={d.adUnits.filter((x:any)=>String(x.app_id)===String(app.id))} daily={d.appDaily[String(app.id)]||{}} id={"app-"+app.id}/>
+          ))}
+        </div>
+      </div>
+    </main>
+  </div>
+}
+
+function AppCard({app,adUnits,daily,id}:{app:any;adUnits:any[];daily:any;id:string}){
+  const dates=Object.keys(daily).sort();
+  const latestDate=dates[dates.length-1];
+  const latest=latestDate?daily[latestDate]:null;
+  const days=dayLabels.map((label,i)=>({label,value:latest?.["d"+i]??null}));
+  return <section className="appCard" id={id}>
+    <div className="appCardTop">
+      <div className="appIdentity"><div className="appIcon">{app.name.slice(0,1).toUpperCase()}</div><div><small>APPLICATION</small><h3>{app.name}</h3><span>{dates.length} revenue dates in selected period</span></div></div>
+      <div className="appHeadline"><span>Revenue at risk</span><b>{money(app.loss)}</b><Status value={app.status}/></div>
+    </div>
+
+    <div className="journey">
+      {days.map((x,i)=><div className={"journeyStep "+(i>0?"hasArrow":"")} key={x.label}>
+        {i>0&&<div className="flowArrow"><span>→</span></div>}
+        <div className="journeyLabel">{x.label}</div>
+        <strong>{x.value==null?"—":money(x.value)}</strong>
+        {i<4&&x.value!=null&&days[i+1].value!=null?<small>{days[i+1].value<=x.value?"retained":"up"} · {x.value?Math.abs((days[i+1].value-x.value)/x.value*100).toFixed(0):0}%</small>:<small>{i===0?"baseline":"available"}</small>}
+      </div>)}
+    </div>
+
+    <div className="appCardBottom">
+      <div className="appMetric"><span>Initial</span><b>{money(app.initial)}</b></div>
+      <div className="appMetric"><span>Latest</span><b>{money(app.latest)}</b></div>
+      <div className="appMetric"><span>Adjustment</span><b className={app.loss>0?"danger":""}>{pct(app.rate)}</b></div>
+      <div className="adBlock"><div className="adBlockHead"><b>Ad units</b><span>{adUnits.length}</span></div>
+        {adUnits.length?<div className="adList">{adUnits.map((ad:any)=><div className="adRow" key={ad.id}><div><b>{ad.name}</b><small>{money(ad.latest)} latest · {money(ad.loss)} at risk</small></div><Status value={ad.status}/></div>)}</div>:<div className="empty">No ad-unit revenue in this period.</div>}
+      </div>
+    </div>
+  </section>
+}
