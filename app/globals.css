@@ -165,13 +165,14 @@ th.sortable{cursor:pointer;user-select:none}th.sortable:hover,th.sorted{color:va
 
 /* Laptop-safe header layout: keep every filter control inside the viewport */
 @media(min-width:1101px) and (max-width:1450px){
-  .head.singleRow{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:center}
-  .head.singleRow .titleRow{min-width:0;width:100%}
-  .head.singleRow .titleRow h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .head.singleRow .filters{width:100%;display:flex;justify-content:flex-start;align-items:flex-end;gap:10px;flex-wrap:nowrap}
-  .head.singleRow .dateSelect{min-width:0;width:170px}
-  .head.singleRow .dateField{min-width:0;flex:0 1 140px}
-  .head.singleRow .dateField input{width:100%;min-width:0}
-  .head.singleRow .dateArrow{flex:0 0 18px}
-  .head.singleRow .filters .btn{flex:0 0 auto}
+  .head.singleRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center}
+  .head.singleRow .titleRow{min-width:0;width:auto;gap:10px}
+  .head.singleRow .titleRow .appIcon.large{width:46px;height:46px;flex-basis:46px}
+  .head.singleRow .titleRow h1{font-size:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .head.singleRow .filters{width:auto;display:flex;justify-content:flex-end;align-items:flex-end;gap:7px;flex-wrap:nowrap}
+  .head.singleRow .dateSelect{min-width:0;width:142px}
+  .head.singleRow .dateField{min-width:0;width:122px}
+  .head.singleRow .dateField input{width:122px;min-width:0;padding:0 8px}
+  .head.singleRow .dateArrow{flex:0 0 12px;font-size:14px}
+  .head.singleRow .filters .btn{height:40px;padding:0 11px}
 }
