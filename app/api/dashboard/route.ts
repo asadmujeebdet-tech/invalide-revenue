@@ -14,7 +14,7 @@ export async function GET(req:NextRequest){
     const appId=u.searchParams.get("appId");
     const pool=getPool();
     const p=[start,end,appId];
-
+    const apps=await pool.query("SELECT app_id AS id,app_name AS name FROM apps ORDER BY app_name");
 
     // The app workspace is always app-scoped. Fetch raw snapshots once and derive
     // D0-D4/retention/trend data in memory instead of running eight aggregations.
