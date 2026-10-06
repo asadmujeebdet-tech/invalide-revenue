@@ -29,7 +29,7 @@ export async function GET(req:NextRequest){
       s.snapshot_day::int AS day_index,s.snapshot_date::text AS snapshot_date,
       s.revenue_micros::float/1000000 AS revenue
       FROM app_revenue_snapshots s
-      WHERE s.app_id=$3 AND s.report_date BETWEEN $1 AND $2
+      WHERE s.app_id::text=$3 AND s.report_date BETWEEN $1 AND $2
         AND s.snapshot_day BETWEEN 0 AND 4
       ORDER BY s.report_date,s.snapshot_day,s.snapshot_date DESC`;
 
@@ -39,7 +39,7 @@ export async function GET(req:NextRequest){
       s.revenue_micros::float/1000000 AS revenue
       FROM ad_unit_revenue_snapshots s
       JOIN ad_units u ON u.ad_unit_id=s.ad_unit_id
-      WHERE u.app_id=$3 AND s.report_date BETWEEN $1 AND $2
+      WHERE u.app_id::text=$3 AND s.report_date BETWEEN $1 AND $2
         AND s.snapshot_day BETWEEN 0 AND 4
       ORDER BY s.ad_unit_id,s.report_date,s.snapshot_day,s.snapshot_date DESC`;
 
