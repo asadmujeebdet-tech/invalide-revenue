@@ -68,7 +68,7 @@ export default function AppRevenuePage(){
     <div className="hRight"><button className="icon" onClick={()=>setTheme(theme==="dark"?"light":"dark")}><Icon t={theme==="dark"?"sun":"moon"}/></button><button className="btn" onClick={exportCsv}><Icon t="download" s={14}/>Export CSV</button><button className="btn" onClick={()=>load(start,end)}><Icon t="refresh" s={14}/>{loading?"Refreshing…":"Refresh"}</button></div>
    </header>
    <div className="page">
-    <div className="head"><div className="titleRow"><Img name={app.name} large/><div><span className="eyebrow">App revenue workspace</span><h1>{app.name}</h1></div></div>
+    <div className="head singleRow"><div className="titleRow"><Img name={app.name} large/><div><span className="eyebrow">App revenue workspace</span><h1>{app.name}</h1></div></div>
       <div className="filters">
        <div className="dateSelect"><span>Custom Date</span><select value={preset} onChange={e=>applyPreset(e.target.value)}><option value="custom">Custom Date</option><option value="week">This week</option><option value="7">Last 7 Days</option><option value="14">Last 14 Days</option><option value="month">This Month</option></select></div>
        <label className="dateField"><span>From</span><input type="date" value={start} onChange={e=>{setPreset("custom");setStart(e.target.value)}}/></label>
