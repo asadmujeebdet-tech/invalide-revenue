@@ -33,7 +33,7 @@ export async function GET(req:NextRequest){
         AND s.snapshot_day BETWEEN 0 AND 4
       ORDER BY s.report_date,s.snapshot_day,s.snapshot_date DESC`;
 
-    const adSnapshotSql=`SELECT s.ad_unit_id AS id,s.app_id,
+    const adSnapshotSql=`SELECT s.ad_unit_id AS id,u.app_id,
       s.report_date::text AS date,s.snapshot_day::int AS day_index,
       s.snapshot_date::text AS snapshot_date,
       s.revenue_micros::float/1000000 AS revenue
