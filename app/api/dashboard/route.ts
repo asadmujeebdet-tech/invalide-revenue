@@ -19,7 +19,7 @@ export async function GET(req:NextRequest){
     // D0-D4/retention/trend data in memory instead of running eight aggregations.
     if(!appId) {
       return NextResponse.json({
-        range:{start,end},filters:{apps:apps.rows},selectedApp:null,
+        range:{start,end},filters:{apps:[]},selectedApp:null,
         kpis:{initial:0,latest:0,risk:0,rate:null,affectedApps:0,affectedAdUnits:0},
         trend:[],retention:[],apps:[],adUnits:[],appDaily:{},appDayTotals:{},adDaily:{},attention:[]
       });
