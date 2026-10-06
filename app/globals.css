@@ -137,3 +137,20 @@ th.sortable{cursor:pointer;user-select:none}th.sortable:hover,th.sorted{color:va
 
 /* Single-row app workspace header */
 .head.singleRow{align-items:center;flex-wrap:nowrap}.head.singleRow .titleRow{min-width:max-content;flex:0 1 auto}.head.singleRow .titleRow>div{min-width:0}.head.singleRow .titleRow h1{white-space:nowrap;overflow:visible;text-overflow:clip}.head.singleRow .filters{flex:0 0 auto;justify-content:flex-end}@media(max-width:1100px){.head.singleRow{flex-wrap:wrap}.head.singleRow .titleRow{flex:1 1 auto}.head.singleRow .filters{width:auto;margin-top:0}}@media(max-width:760px){.head.singleRow{align-items:flex-start}.head.singleRow .filters{width:100%}}
+
+/* App-specific dashboard themes */
+.appTheme-media{--app-theme:#2563eb;--app-theme-soft:rgba(37,99,235,.11);--app-theme-glow:rgba(37,99,235,.20)}
+.appTheme-cleaner{--app-theme:#16a34a;--app-theme-soft:rgba(22,163,74,.11);--app-theme-glow:rgba(22,163,74,.20)}
+.appTheme-security{--app-theme:#dc2626;--app-theme-soft:rgba(220,38,38,.11);--app-theme-glow:rgba(220,38,38,.20)}
+.appTheme-navigation{--app-theme:#7c3aed;--app-theme-soft:rgba(124,58,237,.11);--app-theme-glow:rgba(124,58,237,.20)}
+.appTheme-finance{--app-theme:#0891b2;--app-theme-soft:rgba(8,145,178,.11);--app-theme-glow:rgba(8,145,178,.20)}
+.appTheme-media .head,.appTheme-cleaner .head,.appTheme-security .head,.appTheme-navigation .head,.appTheme-finance .head{position:relative}
+.appTheme-media .titleRow,.appTheme-cleaner .titleRow,.appTheme-security .titleRow,.appTheme-navigation .titleRow,.appTheme-finance .titleRow{padding:10px 14px 10px 0;border-radius:16px}
+.appTheme-media .titleRow .appIcon.large,.appTheme-cleaner .titleRow .appIcon.large,.appTheme-security .titleRow .appIcon.large,.appTheme-navigation .titleRow .appIcon.large,.appTheme-finance .titleRow .appIcon.large{border-color:color-mix(in srgb,var(--app-theme) 28%,var(--line));box-shadow:0 8px 24px var(--app-theme-glow)}
+.appTheme-media .eyebrow,.appTheme-cleaner .eyebrow,.appTheme-security .eyebrow,.appTheme-navigation .eyebrow,.appTheme-finance .eyebrow{color:var(--app-theme)}
+.appTheme-media .filters .btn.primary,.appTheme-cleaner .filters .btn.primary,.appTheme-security .filters .btn.primary,.appTheme-navigation .filters .btn.primary,.appTheme-finance .filters .btn.primary{background:linear-gradient(135deg,var(--app-theme),color-mix(in srgb,var(--app-theme) 72%,#fff));box-shadow:0 7px 18px var(--app-theme-glow)}
+.appTheme-media .hRight .btn,.appTheme-cleaner .hRight .btn,.appTheme-security .hRight .btn,.appTheme-navigation .hRight .btn,.appTheme-finance .hRight .btn{border-color:color-mix(in srgb,var(--app-theme) 24%,var(--line));background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--app-theme) 4%,var(--surface)));color:var(--text)}
+.appTheme-media .hRight .btn:hover,.appTheme-cleaner .hRight .btn:hover,.appTheme-security .hRight .btn:hover,.appTheme-navigation .hRight .btn:hover,.appTheme-finance .hRight .btn:hover{border-color:var(--app-theme);color:var(--app-theme);box-shadow:0 5px 16px var(--app-theme-glow)}
+.appTheme-media .hRight .btn svg,.appTheme-cleaner .hRight .btn svg,.appTheme-security .hRight .btn svg,.appTheme-navigation .hRight .btn svg,.appTheme-finance .hRight .btn svg{color:var(--app-theme)}
+.appTheme-media .head.singleRow,.appTheme-cleaner .head.singleRow,.appTheme-security .head.singleRow,.appTheme-navigation .head.singleRow,.appTheme-finance .head.singleRow{padding:14px 16px;border:1px solid color-mix(in srgb,var(--app-theme) 18%,var(--line));border-radius:18px;background:linear-gradient(90deg,var(--app-theme-soft),color-mix(in srgb,var(--app-theme) 3%,var(--surface)) 46%,var(--surface));box-shadow:0 8px 28px var(--app-theme-glow);margin-bottom:24px}
+.appTheme-media .head.singleRow h1,.appTheme-cleaner .head.singleRow h1,.appTheme-security .head.singleRow h1,.appTheme-navigation .head.singleRow h1,.appTheme-finance .head.singleRow h1{white-space:nowrap;overflow:visible;text-overflow:clip}
