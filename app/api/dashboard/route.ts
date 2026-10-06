@@ -11,11 +11,12 @@ export async function GET(req:NextRequest){
     const u=new URL(req.url);
     const end=u.searchParams.get("end")||new Date().toISOString().slice(0,10);
     const start=u.searchParams.get("start")||day(end,-29);
+    const appId=u.searchParams.get("appId");
     const pool=getPool();
-    const p=[start,end];
+    const p=[start,end,appId];
 
     const apps=await pool.query("SELECT app_id AS id,app_name AS name FROM apps ORDER BY app_name");
-    const ads=await pool.query("SELECT u.ad_unit_id AS id,u.ad_unit_name AS name,u.app_id FROM ad_units u JOIN apps a ON a.app_id=u.app_id ORDER BY u.app_id,u.ad_unit_name");
+    const ads=await pool.query("SELECT u.ad_unit_id AS id,u.ad_unit_name AS name,u.app_id FROM ad_units u JOIN apps a ON a.app_id=u.app_id WHERE ($3::text IS NULL OR u.app_id::text=$3) ORDER BY u.app_id,u.ad_unit_name");
 
     const initialSql=`SELECT s.app_id AS id,SUM(s.revenue_micros)::float/1000000 initial
       FROM app_revenue_snapshots s
@@ -29,7 +30,7 @@ export async function GET(req:NextRequest){
           s.app_id,s.report_date,s.revenue_micros
         FROM app_revenue_snapshots s
         JOIN apps a ON a.app_id=s.app_id
-        WHERE s.report_date BETWEEN $1 AND $2
+        WHERE s.report_date BETWEEN $1 AND $2 AND ($3::text IS NULL OR s.app_id::text=$3)
         ORDER BY s.app_id,s.report_date,s.snapshot_day DESC,s.snapshot_date DESC
       ) x
       GROUP BY x.app_id`;
@@ -38,7 +39,7 @@ export async function GET(req:NextRequest){
       SUM(s.revenue_micros)::float/1000000 AS revenue
       FROM app_revenue_snapshots s
       JOIN apps a ON a.app_id=s.app_id
-      WHERE s.report_date BETWEEN $1 AND $2
+      WHERE s.report_date BETWEEN $1 AND $2 AND ($3::text IS NULL OR s.app_id::text=$3)
       GROUP BY s.report_date,s.snapshot_day
       ORDER BY s.report_date,s.snapshot_day`;
 
@@ -46,7 +47,7 @@ export async function GET(req:NextRequest){
       s.snapshot_day::int AS day_index,SUM(s.revenue_micros)::float/1000000 AS revenue
       FROM app_revenue_snapshots s
       JOIN apps a ON a.app_id=s.app_id
-      WHERE s.report_date BETWEEN $1 AND $2 AND s.snapshot_day BETWEEN 0 AND 4
+      WHERE s.report_date BETWEEN $1 AND $2 AND s.snapshot_day BETWEEN 0 AND 4 AND ($3::text IS NULL OR s.app_id::text=$3)
       GROUP BY s.app_id,s.report_date,s.snapshot_day
       ORDER BY s.app_id,s.report_date,s.snapshot_day`;
 
@@ -54,14 +55,14 @@ export async function GET(req:NextRequest){
       SUM(s.revenue_micros)::float/1000000 AS revenue
       FROM app_revenue_snapshots s
       JOIN apps a ON a.app_id=s.app_id
-      WHERE s.report_date BETWEEN $1 AND $2 AND s.snapshot_day BETWEEN 0 AND 4
+      WHERE s.report_date BETWEEN $1 AND $2 AND s.snapshot_day BETWEEN 0 AND 4 AND ($3::text IS NULL OR s.app_id::text=$3)
       GROUP BY s.snapshot_day
       ORDER BY s.snapshot_day`;
 
     const adInitialSql=`SELECT s.ad_unit_id AS id,SUM(s.revenue_micros)::float/1000000 initial
       FROM ad_unit_revenue_snapshots s
       JOIN ad_units u ON u.ad_unit_id=s.ad_unit_id
-      WHERE s.report_date BETWEEN $1 AND $2 AND s.snapshot_day=0
+      WHERE s.report_date BETWEEN $1 AND $2 AND s.snapshot_day=0 AND ($3::text IS NULL OR u.app_id::text=$3)
       GROUP BY s.ad_unit_id`;
 
     const adLatestSql=`SELECT x.ad_unit_id AS id,SUM(x.revenue_micros)::float/1000000 latest
@@ -70,12 +71,12 @@ export async function GET(req:NextRequest){
           s.ad_unit_id,s.report_date,s.revenue_micros
         FROM ad_unit_revenue_snapshots s
         JOIN ad_units u ON u.ad_unit_id=s.ad_unit_id
-        WHERE s.report_date BETWEEN $1 AND $2
+        WHERE s.report_date BETWEEN $1 AND $2 AND ($3::text IS NULL OR s.app_id::text=$3)
         ORDER BY s.ad_unit_id,s.report_date,s.snapshot_day DESC,s.snapshot_date DESC
       ) x
       GROUP BY x.ad_unit_id`;
 
-    const adDailySql=`SELECT s.ad_unit_id AS ad_unit_id,s.report_date::text AS date,s.snapshot_day::int AS day_index,SUM(s.revenue_micros)::float/1000000 AS revenue FROM ad_unit_revenue_snapshots s JOIN ad_units u ON u.ad_unit_id=s.ad_unit_id WHERE s.report_date BETWEEN $1 AND $2 AND s.snapshot_day BETWEEN 0 AND 4 GROUP BY s.ad_unit_id,s.report_date,s.snapshot_day ORDER BY s.ad_unit_id,s.report_date,s.snapshot_day`;
+    const adDailySql=`SELECT s.ad_unit_id AS ad_unit_id,s.report_date::text AS date,s.snapshot_day::int AS day_index,SUM(s.revenue_micros)::float/1000000 AS revenue FROM ad_unit_revenue_snapshots s JOIN ad_units u ON u.ad_unit_id=s.ad_unit_id WHERE s.report_date BETWEEN $1 AND $2 AND s.snapshot_day BETWEEN 0 AND 4 AND ($3::text IS NULL OR u.app_id::text=$3) GROUP BY s.ad_unit_id,s.report_date,s.snapshot_day ORDER BY s.ad_unit_id,s.report_date,s.snapshot_day`;
     const [ai,al,trend,retention,appDaily,adDaily,adi,adl]=await Promise.all([
       pool.query(initialSql,p),pool.query(latestSql,p),pool.query(trendSql,p),
       pool.query(retentionSql,p),pool.query(appDailySql,p),pool.query(adDailySql,p),
@@ -88,7 +89,7 @@ export async function GET(req:NextRequest){
       const initial=iMap.get(String(a.id))||0,latest=lMap.get(String(a.id))||0;
       const loss=Math.max(0,initial-latest),rate=initial?loss/initial*100:0;
       return {...a,initial,latest,loss,rate,status:rate>=10?"CRITICAL":rate>=5?"HIGH":rate>=2?"MEDIUM":"LOW"};
-    }).filter((x:any)=>x.initial>0).sort((a:any,b:any)=>b.loss-a.loss);
+    }).filter((x:any)=>x.initial>0 && (!appId || String(x.id)===String(appId))).sort((a:any,b:any)=>b.loss-a.loss);
 
     const adiMap=new Map(adi.rows.map((r:any)=>[String(r.id),num(r.initial)]));
     const adlMap=new Map(adl.rows.map((r:any)=>[String(r.id),num(r.latest)]));
@@ -128,7 +129,7 @@ export async function GET(req:NextRequest){
 
     return NextResponse.json({
       range:{start,end},
-      filters:{apps:apps.rows},
+      filters:{apps:apps.rows},selectedApp:appId,
       kpis:{initial,latest,risk,rate,
         affectedApps:appsOut.filter((x:any)=>x.loss>0).length,
         affectedAdUnits:adOut.filter((x:any)=>x.loss>0).length},
