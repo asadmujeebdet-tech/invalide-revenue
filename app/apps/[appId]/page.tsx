@@ -9,6 +9,7 @@ const icons:any={
 "All Video Downloader X":"https://lh3.googleusercontent.com/drJQsOnb3KqJhJCs-CWjNfS6ajomyaNSRj1rkLuUJdmUq8FsMix4Enc0MBHb6veYdmqM2NJDGg=s32",
 "Phone Cleaner Junk Remover":"https://lh3.googleusercontent.com/m36tGO36s9u1IsS9RmhdNj24BQpBxsTcWFZdV1su174oNmJ5_3YGAoywi7wMFZ99FVGhddEwTw=s32",
 "Antivirus - Clean Virus, Junk":"https://lh3.googleusercontent.com/dfkVj-KpDvNMM3XJCF7zn7hWEn6gpQDcf6zEe21cjCrxEIWRAho97Ah2RX7ot5eYhOxYreH1oQ=s32",
+"Antivirus Cleaner Pro":"https://lh3.googleusercontent.com/dfkVj-KpDvNMM3XJCF7zn7hWEn6gpQDcf6zEe21cjCrxEIWRAho97Ah2RX7ot5eYhOxYreH1oQ=s32",
 "Phone - Junk Cleaner":"https://lh3.googleusercontent.com/4-2u2EQbcRAB9xhTFb7ij3SPQN2M5FnH7FHn6E5o5wcaMM82uBezVSZYlWI8nhnINTmz5IsKPg=s32",
 "GPS Map Location: Route Finder":"https://lh3.googleusercontent.com/QniK9fEnkQYFAtVWFMr6Ac1_yGo56wxyZ5cQ3jhjWe-5V62-Tc8sl9RYXchskZuXXjFZwOlw=s32",
 "GPS Maps & 3D Navigation":"https://lh3.googleusercontent.com/8wIYbFKhuCBcC6G0Xsd-QrLOMlT6RDDs1FzevOiXkC8k_v_ceXdP780whZUTlQSNr4kooL-_VBY=s32",
@@ -66,7 +67,7 @@ export default function AppRevenuePage(){
     <div className="hRight"><button className="icon" onClick={()=>setTheme(theme==="dark"?"light":"dark")}><Icon t={theme==="dark"?"sun":"moon"}/></button><button className="btn" onClick={exportCsv}><Icon t="download" s={14}/>Export CSV</button><button className="btn" onClick={()=>load(start,end)}><Icon t="refresh" s={14}/>{loading?"Refreshing…":"Refresh"}</button></div>
    </header>
    <div className="page">
-    <div className="head"><div className="titleRow"><Img name={app.name} large/><div><span className="eyebrow">App revenue workspace</span><h1>{app.name}</h1><p>D0–D4 invalid revenue snapshots and ad-unit performance.</p></div></div>
+    <div className="head"><div className="titleRow"><Img name={app.name} large/><div><span className="eyebrow">App revenue workspace</span><h1>{app.name}</h1></div></div>
       <div className="filters">
        <div className="dateSelect"><span>Custom Date</span><select value={preset} onChange={e=>applyPreset(e.target.value)}><option value="custom">Custom Date</option><option value="week">This week</option><option value="7">Last 7 Days</option><option value="14">Last 14 Days</option><option value="month">This Month</option></select></div>
        <label className="dateField"><span>From</span><input type="date" value={start} onChange={e=>{setPreset("custom");setStart(e.target.value)}}/></label>
@@ -78,7 +79,7 @@ export default function AppRevenuePage(){
     {err&&<div className="alert"><Icon t="alert"/>{err}</div>}
     <div className={"kpis"+(loading?" busy":"")}><KPI label="Initial revenue" value={money(d.kpis.initial)} meta="D0 baseline" icon="layers"/><KPI label="Latest revenue" value={money(d.kpis.latest)} meta="Latest snapshot" icon="trend"/><KPI label="Revenue at risk" value={money(d.kpis.risk)} meta="Initial − latest" icon="alert" tone="danger"/><KPI label="Adjustment rate" value={pct(d.kpis.rate)} meta="Risk / initial" icon="trend" tone="danger"/><KPI label="Ad units with risk" value={String(d.kpis.affectedAdUnits)} meta="Selected dates" icon="layers"/></div>
     <div className="grid2">
-     <section className="card pad24"><div className="cardHead"><div><h2>Revenue by revenue date</h2><p>D0–D4 snapshots for {app.name}</p></div><div className="chips">{days.map((x,i)=><button key={x} className={on[i]?"on":""} style={{"--chip":colors[i]} as any} onClick={()=>setOn(on.map((v,j)=>j===i?!v:v))}><i/>{x}</button>)}</div></div>
+     <section className="card pad24"><div className="cardHead"><div><h2>Revenue by revenue date</h2></div><div className="chips">{days.map((x,i)=><button key={x} className={on[i]?"on":""} style={{"--chip":colors[i]} as any} onClick={()=>setOn(on.map((v,j)=>j===i?!v:v))}><i/>{x}</button>)}</div></div>
       <div className="chart"><ResponsiveContainer width="100%" height="100%"><AreaChart data={d.trend} margin={{top:8,right:8,left:-8,bottom:0}}><CartesianGrid vertical={false} stroke="var(--line)" strokeDasharray="3 4"/><XAxis dataKey="date" tickFormatter={v=>String(v).slice(5)} tickLine={false} axisLine={false} tick={{fill:"var(--faint)",fontSize:11}} minTickGap={24}/><YAxis tickFormatter={v=>money(v)} tickLine={false} axisLine={false} tick={{fill:"var(--faint)",fontSize:11}} width={56}/><Tooltip content={<Tip/>}/>{days.map((x,i)=>on[i]&&<Area key={x} type="monotone" dataKey={"d"+i} name={x} stroke={colors[i]} strokeWidth={2} fillOpacity={0.08} fill={colors[i]} dot={false} connectNulls/>)}</AreaChart></ResponsiveContainer></div>
      </section>
      <section className="card pad24"><div className="cardHead"><div><h2>Revenue retention</h2><p>Share of D0 revenue by snapshot day</p></div></div><div className="chart sm"><ResponsiveContainer width="100%" height="100%"><BarChart data={ret} margin={{top:8,right:0,left:0,bottom:0}}><CartesianGrid vertical={false} stroke="var(--line)" strokeDasharray="3 4"/><XAxis dataKey="name" tickLine={false} axisLine={false} tick={{fill:"var(--faint)",fontSize:11}}/><YAxis hide/><Tooltip content={<Tip/>}/><Bar dataKey="revenue" name="Revenue" radius={[6,6,0,0]} label={{position:"top",fill:"var(--text)",fontSize:11,fontWeight:650,formatter:(v:any)=>money(v)}}>{ret.map((_:any,i:number)=><Cell key={i} fill={colors[i]}/>)}</Bar></BarChart></ResponsiveContainer></div><div className="retRow">{ret.map((r:any)=><div key={r.name}><span>{r.name}</span><b>{pct(r.retention)}</b></div>)}</div></section>
@@ -97,13 +98,16 @@ export default function AppRevenuePage(){
 function KPI({label,value,meta,icon,tone}:{label:string;value:string;meta:string;icon:string;tone?:string}){return <div className={"kpi "+(tone||"")}><div className="kpiTop"><span>{label}</span><div className="kpiIcon"><Icon t={icon} s={15}/></div></div><b>{value}</b><small>{meta}</small></div>}
 
 function AdTable({app,adUnits,adDaily,onOpen}:{app:any;adUnits:any[];adDaily:any;onOpen:(ad:any)=>void}){
- const[all,setAll]=useState(false),[sort,setSort]=useState({k:"date",dir:-1});
+ const[page,setPage]=useState(1),[sort,setSort]=useState({k:"date",dir:-1});
  const rows=adUnits.flatMap((ad:any)=>Object.entries(adDaily?.[String(ad.id)]||{}).map(([date,v]:any)=>{const last=[v.d4,v.d3,v.d2,v.d1].find((x:any)=>x!=null);return{ad,date,v,loss:v.d0&&last!=null?Math.max(0,v.d0-last):0}}));
  const val=(r:any,k:string)=>k==="date"?r.date:k==="name"?r.ad.name.toLowerCase():k==="loss"?r.loss:(r.v[k]??-1);
- const shown=[...rows].sort((a,b)=>{const x=val(a,sort.k),y=val(b,sort.k);return(x>y?1:x<y?-1:0)*sort.dir}).slice(0,all?999:8);
- const toggle=(k:string)=>setSort(s=>s.k===k?{k,dir:-s.dir}:{k,dir:k==="date"||k==="name"?1:-1});
+ const pageSize=8;
+ const sorted=[...rows].sort((a,b)=>{const x=val(a,sort.k),y=val(b,sort.k);return(x>y?1:x<y?-1:0)*sort.dir});
+ const pageCount=Math.max(1,Math.ceil(sorted.length/pageSize));
+ const shown=sorted.slice((page-1)*pageSize,page*pageSize);
+ const toggle=(k:string)=>{setSort(s=>s.k===k?{k,dir:-s.dir}:{k,dir:k==="date"||k==="name"?1:-1});setPage(1)};
  const cols:[string,string][]=[["date","Date"],["name","Ad unit"],...days.map((x,i):[string,string]=>["d"+i,x]),["loss","At risk"]];
- return <div className="adBlock"><div className="adHead"><div><b>Ad units</b><span className="pill">{rows.length} rows</span></div></div>{rows.length?<><div className="tableWrap"><table><thead><tr>{cols.map(([k,l])=><th key={k} className={(k[0]==="d"||k==="loss"?"num ":"")+"sortable"} onClick={()=>toggle(k)}>{l}<span className="sortIc">{sort.k===k?(sort.dir>0?"↑":"↓"):""}</span></th>)}</tr></thead><tbody>{shown.map((r:any,i:number)=><tr key={r.ad.id+r.date+i} className="clickRow" onClick={()=>onOpen(r.ad)}><td className="muted">{r.date}</td><td><b>{r.ad.name}</b></td>{days.map((_,j)=><td key={j} className="num">{r.v["d"+j]==null?"—":money(r.v["d"+j])}</td>)}<td className={"num"+(r.loss>0?" danger":"")}>{r.loss>0?money(r.loss):"—"}</td></tr>)}</tbody></table></div>{rows.length>8&&<button className="more" onClick={()=>setAll(!all)}>{all?"Show less":"Show all "+rows.length+" rows"}</button>}</>:<div className="empty">No ad-unit revenue in this period.</div>}</div>
+ return <div className="adBlock"><div className="adHead"><div><b>Ad units</b><span className="pill">{rows.length} rows</span></div></div>{rows.length?<><div className="tableWrap"><table><thead><tr>{cols.map(([k,l])=><th key={k} className={(k[0]==="d"||k==="loss"?"num ":"")+"sortable"} onClick={()=>toggle(k)}>{l}<span className="sortIc">{sort.k===k?(sort.dir>0?"↑":"↓"):""}</span></th>)}</tr></thead><tbody>{shown.map((r:any,i:number)=><tr key={r.ad.id+r.date+i} className="clickRow" onClick={()=>onOpen(r.ad)}><td className="muted">{r.date}</td><td><b>{r.ad.name}</b></td>{days.map((_,j)=><td key={j} className="num">{r.v["d"+j]==null?"—":money(r.v["d"+j])}</td>)}<td className={"num"+(r.loss>0?" danger":"")}>{r.loss>0?money(r.loss):"—"}</td></tr>)}</tbody></table></div>{pageCount>1&&<div className="pagination"><button className="pageBtn" disabled={page===1} onClick={()=>setPage(p=>p-1)}>Previous</button><span>Page {page} of {pageCount}</span><button className="pageBtn" disabled={page===pageCount} onClick={()=>setPage(p=>p+1)}>Next</button></div>}</>:<div className="empty">No ad-unit revenue in this period.</div>}</div>
 }
 
 function AdPanel({ad,app,daily,onClose}:{ad:any;app:any;daily:any;onClose:()=>void}){
