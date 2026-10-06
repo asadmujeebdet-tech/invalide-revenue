@@ -8,6 +8,7 @@ const colors=["var(--c0)","var(--c1)","var(--c2)","var(--c3)","var(--c4)"];
 const icons:any={
 "All Video Downloader X":"https://lh3.googleusercontent.com/drJQsOnb3KqJhJCs-CWjNfS6ajomyaNSRj1rkLuUJdmUq8FsMix4Enc0MBHb6veYdmqM2NJDGg=s32",
 "Phone Cleaner Junk Remover":"https://lh3.googleusercontent.com/m36tGO36s9u1IsS9RmhdNj24BQpBxsTcWFZdV1su174oNmJ5_3YGAoywi7wMFZ99FVGhddEwTw=s32",
+"Phone Cleaner - Junk Remover":"https://lh3.googleusercontent.com/m36tGO36s9u1IsS9RmhdNj24BQpBxsTcWFZdV1su174oNmJ5_3YGAoywi7wMFZ99FVGhddEwTw=s32",
 "Antivirus - Clean Virus, Junk":"https://lh3.googleusercontent.com/dfkVj-KpDvNMM3XJCF7zn7hWEn6gpQDcf6zEe21cjCrxEIWRAho97Ah2RX7ot5eYhOxYreH1oQ=s32",
 "Antivirus Cleaner Pro":"https://lh3.googleusercontent.com/dfkVj-KpDvNMM3XJCF7zn7hWEn6gpQDcf6zEe21cjCrxEIWRAho97Ah2RX7ot5eYhOxYreH1oQ=s32",
 "Phone - Junk Cleaner":"https://lh3.googleusercontent.com/4-2u2EQbcRAB9xhTFb7ij3SPQN2M5FnH7FHn6E5o5wcaMM82uBezVSZYlWI8nhnINTmz5IsKPg=s32",
@@ -58,8 +59,8 @@ export default function AppRevenuePage(){
   <aside className={"sidebar"+(nav?" open":"")}>
    <div className="brand"><div className="logo">IR</div><div><b>Invalid Revenue</b><small>Revenue Intelligence</small></div></div>
    <div className="search"><Icon t="search" s={14}/><input placeholder="Search apps…" value={q} onChange={e=>setQ(e.target.value)}/></div>
-   <div className="sideHeading">Apps<span>{apps.length}</span></div>
-   <nav>{apps.map((a:any)=><button key={a.id} className={String(a.id)===appId?"active":""} onClick={()=>{setNav(false);router.push("/apps/"+a.id)}}><Img name={a.name}/><span className="appName">{a.name}</span><span className="navChevron"><Icon t="arrow" s={14}/></span></button>)}</nav>
+   <div className="sideHeading">Workspace<span>{apps.length}</span></div>
+   <nav><button onClick={()=>{setNav(false);router.push("/apps")}}><Icon t="layers" s={17}/><span className="appName">Overview</span><span className="navChevron"><Icon t="arrow" s={14}/></span></button>{apps.map((a:any)=><button key={a.id} className={String(a.id)===appId?"active":""} onClick={()=>{setNav(false);router.push("/apps/"+a.id)}}><Img name={a.name}/><span className="appName">{a.name}</span><span className="navChevron"><Icon t="arrow" s={14}/></span></button>)}</nav>
    <div className="sideFoot"><span className="live"/>Live revenue workspace</div>
   </aside>
   <main>
