@@ -84,7 +84,8 @@ export async function GET(req:NextRequest){
     const latest=Array.from(latestByDate.values()).reduce((n:number,r:any)=>n+num(r.revenue),0);
     const risk=Math.max(0,initial-latest);
     const rate=initial?risk/initial*100:null;
-    const appOut={...selectedMeta,initial,latest,loss:risk,rate,status:rate>=10?"CRITICAL":rate>=5?"HIGH":rate>=2?"MEDIUM":"LOW"};
+    const statusRate=rate ?? 0;
+    const appOut={...selectedMeta,initial,latest,loss:risk,rate,status:statusRate>=10?"CRITICAL":statusRate>=5?"HIGH":statusRate>=2?"MEDIUM":"LOW"};
 
     const adDailyMap:any={};
     const adTotals:any={};
