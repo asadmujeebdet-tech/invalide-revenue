@@ -15,8 +15,6 @@ export async function GET(req:NextRequest){
     const pool=getPool();
     const p=[start,end,appId];
 
-    const apps=await pool.query("SELECT app_id AS id,app_name AS name FROM apps ORDER BY app_name");
-    const ads=await pool.query("SELECT u.ad_unit_id AS id,u.ad_unit_name AS name,u.app_id FROM ad_units u JOIN apps a ON a.app_id=u.app_id WHERE ($3::text IS NULL OR u.app_id::text=$3) ORDER BY u.app_id,u.ad_unit_name");
 
     // The app workspace is always app-scoped. Fetch raw snapshots once and derive
     // D0-D4/retention/trend data in memory instead of running eight aggregations.
@@ -47,7 +45,7 @@ export async function GET(req:NextRequest){
       ORDER BY s.ad_unit_id,s.report_date,s.snapshot_day,s.snapshot_date DESC`;
 
     const [appMeta,adMeta,appSnapshots,adSnapshots]=await Promise.all([
-      Promise.resolve(apps),
+      pool.query("SELECT app_id AS id,app_name AS name FROM apps ORDER BY app_name"),
       pool.query("SELECT u.ad_unit_id AS id,u.ad_unit_name AS name,u.app_id FROM ad_units u WHERE u.app_id::text=$3 ORDER BY u.ad_unit_name",p),
       pool.query(appSnapshotSql,p),
       pool.query(adSnapshotSql,p)
@@ -76,7 +74,7 @@ export async function GET(req:NextRequest){
       if(!prev || d>Number(prev.day_index) || (d===Number(prev.day_index) && String(r.snapshot_date)>String(prev.snapshot_date))) latestByDate.set(key,r);
     }
 
-    const d0=Object.values(appDayTotals[String(appId)]||{})[0] || 0;
+    const d0=Number(appDayTotals[String(appId)]?.d0||0);
     const retentionOut=Array.from({length:5},(_,i)=>{
       const revenue=Number(appDayTotals[String(appId)]?.["d"+i]||0);
       return {day:i,revenue,retention:d0?revenue/d0*100:null};
@@ -110,7 +108,6 @@ export async function GET(req:NextRequest){
       return {...a,initial,latest,loss,rate,status:rate>=10?"CRITICAL":rate>=5?"HIGH":rate>=2?"MEDIUM":"LOW"};
     }).filter((x:any)=>x.initial>0).sort((a:any,b:any)=>b.loss-a.loss);
 
-    const critical=[appOut.type="App",...[]];
     const attention=[
       {...appOut,type:"App"},
       ...adOut.slice(0,6).map((x:any)=>({...x,type:"Ad Unit"}))
@@ -118,15 +115,15 @@ export async function GET(req:NextRequest){
 
     return NextResponse.json({
       range:{start,end},
-      filters:{apps:apps.rows},selectedApp:appId,
+      filters:{apps:appMeta.rows},selectedApp:appId,
       kpis:{initial,latest,risk,rate,
-        affectedApps:appsOut.filter((x:any)=>x.loss>0).length,
+        affectedApps:appOut.loss>0?1:0,
         affectedAdUnits:adOut.filter((x:any)=>x.loss>0).length},
       trend:Object.values(trendMap),
       retention:retentionOut,
       apps:[appOut],
       adUnits:adOut,
-      appDaily:dailyMap,
+      appDaily:appDaily,
       appDayTotals,
       adDaily:adDailyMap,
       attention
