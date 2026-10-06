@@ -154,3 +154,7 @@ th.sortable{cursor:pointer;user-select:none}th.sortable:hover,th.sorted{color:va
 .appTheme-media .hRight .btn svg,.appTheme-cleaner .hRight .btn svg,.appTheme-security .hRight .btn svg,.appTheme-navigation .hRight .btn svg,.appTheme-finance .hRight .btn svg{color:var(--app-theme)}
 .appTheme-media .head.singleRow,.appTheme-cleaner .head.singleRow,.appTheme-security .head.singleRow,.appTheme-navigation .head.singleRow,.appTheme-finance .head.singleRow{padding:14px 16px;border:1px solid color-mix(in srgb,var(--app-theme) 18%,var(--line));border-radius:18px;background:linear-gradient(90deg,var(--app-theme-soft),color-mix(in srgb,var(--app-theme) 3%,var(--surface)) 46%,var(--surface));box-shadow:0 8px 28px var(--app-theme-glow);margin-bottom:24px}
 .appTheme-media .head.singleRow h1,.appTheme-cleaner .head.singleRow h1,.appTheme-security .head.singleRow h1,.appTheme-navigation .head.singleRow h1,.appTheme-finance .head.singleRow h1{white-space:nowrap;overflow:visible;text-overflow:clip}
+
+/* Keep the dashboard header clean: no horizontal scrollbar */
+.appTheme-media .head.singleRow,.appTheme-cleaner .head.singleRow,.appTheme-security .head.singleRow,.appTheme-navigation .head.singleRow,.appTheme-finance .head.singleRow{overflow:visible;max-width:100%;}
+.appTheme-media .filters,.appTheme-cleaner .filters,.appTheme-security .filters,.appTheme-navigation .filters,.appTheme-finance .filters{min-width:0;}
