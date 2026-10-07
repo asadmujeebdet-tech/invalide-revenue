@@ -38,18 +38,20 @@ export function useToast(){
 
 const D5=["D0","D1","D2","D3","D4"];
 const usd=(n:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",notation:"compact",maximumFractionDigits:1}).format(n||0);
-/** Chevron pipeline. Pass per-date `rows` (preferred): values and kept-% are computed like-for-like on the same revenue dates. */
+/** Five snapshot values connected by exactly four arrows. Each arrow contains the like-for-like adjustment percentage. */
 export function ChevronFlow({rows,totals,compact=false,note=false}:{rows?:any[];totals?:any;compact?:boolean;note?:boolean}){
   const base=rows?rows.filter(r=>Number(r.d0||0)>0):null;
   const sum=(rs:any[],k:string)=>rs.reduce((n,r)=>n+Number(r[k]||0),0);
-  const val=(i:number)=>base?(()=>{const rs=base.filter(r=>r["d"+i]!=null);return rs.length?sum(rs,"d"+i):null})():(totals?.["d"+i]??null);
-  const rate=(i:number)=>{const rs=base?base.filter(r=>r["d"+i]!=null&&r["d"+(i+1)]!=null):null;if(rs){const a=sum(rs,"d"+i);return a?sum(rs,"d"+(i+1))/a*100:null}const a=val(i),n=val(i+1);return a&&n!=null?n/a*100:null};
-  const first=val(0);
-  const items:any[]=[<div key="d0" className="chev val c0" style={{"--k":0} as any}><b>{first==null?"—":usd(first)}</b><span>D0 · Initial</span></div>];
-  for(let i=1;i<=4;i++){
-    const v=val(i),r=rate(i-1);
-    items.push(<div key={"r"+i} className="chev rate" style={{"--k":items.length} as any}><b className={r!=null&&r<100?"dn":r!=null?"up":""}>{r==null?"—":r.toFixed(1)+"%"}</b><span>D{i-1} → D{i}</span></div>);
-    items.push(<div key={"d"+i} className={"chev val c"+i+(v==null?" pend":"")} style={{"--k":items.length} as any}><b>{v==null?"—":usd(v)}</b><span>D{i}{v==null?" · Upcoming":""}</span></div>);
+  const val=(i:number)=>{
+    if(base){const rs=base.filter(r=>r["d"+i]!=null);return rs.length?sum(rs,"d"+i):null}
+    return totals?.["d"+i]??null;
+  };
+  const rate=(i:number)=>{const current=val(i),next=val(i+1);return current!=null&&current!==0&&next!=null?(next/current-1)*100:null};
+  const items:any[]=[];
+  for(let i=0;i<=4;i++){
+    const v=val(i);
+    items.push(<div key={"d"+i} className={"chev val c"+i+(v==null?" pend":"")} style={{"--k":items.length} as any}><b>{v==null?"—":usd(v)}</b><span>D{i}</span></div>);
+    if(i<4){const r=rate(i);items.push(<div key={"r"+i} className={"chev rate"+(r!=null&&r<0?" down":"")} style={{"--k":items.length} as any}><b className={r!=null&&r<0?"dn":r!=null?"up":""}>{r==null?"—":(r>0?"+":"")+r.toFixed(1)+"%"}</b></div>)}
   }
   return <div className={"chevWrap"+(compact?" compact":"")}><div className={"chevStrip"+(compact?" compact":"")}>{items}</div></div>;
 }
