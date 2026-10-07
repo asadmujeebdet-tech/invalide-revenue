@@ -311,3 +311,12 @@ tbody tr.selected td{background:var(--accent-soft)}tbody tr.pendRow td{color:var
 .progress .chevWrap{padding-top:14px}
 .chevMini{display:flex;align-items:center;gap:7px;margin:8px 2px 4px;font-size:11px;color:var(--faint)}.chevMini i{width:6px;height:6px;border-radius:50%;background:var(--ok)}
 .statusPill svg{flex:none}
+
+/* v8 dashboard refinements */
+.revenueChartFull{width:100%;grid-column:1/-1}
+.tableSearch{display:flex;align-items:center;gap:8px;height:36px;min-width:220px;padding:0 11px;border:1px solid var(--line);border-radius:9px;background:var(--surface2);color:var(--faint)}
+.tableSearch:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.tableSearch input{border:0;outline:0;background:transparent;color:var(--text);width:100%;font-size:12px}
+.tableSearch input::placeholder{color:var(--faint)}
+.adHead{gap:14px}.adHead .tableSearch{margin-left:auto}
+@media(max-width:700px){.tableSearch{min-width:0;width:180px}.adHead{align-items:flex-start}.adHead .tableSearch{margin-left:0}}
