@@ -41,9 +41,19 @@ const usd=(n:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"
 /** Five snapshot values connected by exactly four arrows. Each arrow contains the like-for-like adjustment percentage. */
 export function ChevronFlow({rows,totals,compact=false,note=false}:{rows?:any[];totals?:any;compact?:boolean;note?:boolean}){
   const base=rows?rows.filter(r=>Number(r.d0||0)>0):null;
-  const sum=(rs:any[],k:string)=>rs.reduce((n,r)=>n+Number(r[k]||0),0);
+  // Each stage is a like-for-like portfolio snapshot: when a revenue date has
+  // not reached Dn yet, carry forward its latest available value instead of
+  // dropping that date from the total. This keeps D0 and D4 directly comparable.
   const val=(i:number)=>{
-    if(base){const rs=base.filter(r=>r["d"+i]!=null);return rs.length?sum(rs,"d"+i):null}
+    if(base){
+      return base.reduce((total,r)=>{
+        for(let j=i;j>=0;j--){
+          const v=r["d"+j];
+          if(v!=null)return total+Number(v||0);
+        }
+        return total;
+      },0);
+    }
     return totals?.["d"+i]??null;
   };
   const rate=(i:number)=>{const current=val(i),next=val(i+1);return current!=null&&current!==0&&next!=null?(next/current-1)*100:null};
