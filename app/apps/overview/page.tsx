@@ -7,7 +7,7 @@ import {ResponsiveContainer,AreaChart,Area,XAxis,YAxis,Tooltip} from "recharts";
 
 const days=["D0","D1","D2","D3","D4"];
 const colors=["var(--c0)","var(--c1)","var(--c2)","var(--c3)","var(--c4)"];
-const ico:any={search:"M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3",menu:"M3 6h18M3 12h18M3 18h18",moon:"M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z",sun:"M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4",arrow:"M5 12h14m-6-6 6 6-6 6",refresh:"M20 11a8 8 0 1 0 1 2M20 4v7h-7",layers:"M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5",alert:"M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"};
+const ico:any={home:"M3 10.5 12 3l9 7.5v9a1.5 1.5 0 0 1-1.5 1.5h-5v-6h-5v6h-5A1.5 1.5 0 0 1 3 19.5z",search:"M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3",menu:"M3 6h18M3 12h18M3 18h18",moon:"M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z",sun:"M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4",arrow:"M5 12h14m-6-6 6 6-6 6",refresh:"M20 11a8 8 0 1 0 1 2M20 4v7h-7",layers:"M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5",alert:"M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"};
 const Icon=({t,s=16}:{t:string;s?:number})=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={ico[t]||ico.layers}/></svg>;
 const money=(n:any)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",notation:"compact",maximumFractionDigits:1}).format(Number(n)||0);
 const pct=(n:any)=>n==null?"—":Number(n).toFixed(1)+"%";
@@ -20,7 +20,7 @@ function Tip({active,payload,label}:any){if(!active||!payload?.length)return nul
 
 export default function Overview(){
  const router=useRouter();const r0=rangeFor("7")!;
- const[d,setD]=useState<any>(null),[err,setErr]=useState(""),[loading,setLoading]=useState(true),[start,setStart]=useState(r0[0]),[end,setEnd]=useState(r0[1]),[preset,setPreset]=useState("7"),[theme,setTheme]=useState("light"),[nav,setNav]=useState(false),[q,setQ]=useState("");
+ const[d,setD]=useState<any>(null),[err,setErr]=useState(""),[loading,setLoading]=useState(true),[start,setStart]=useState(r0[0]),[end,setEnd]=useState(r0[1]),[preset,setPreset]=useState("7"),[theme,setTheme]=useState(()=>typeof window!=="undefined"?(localStorage.getItem("ir-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light")):"light"),[nav,setNav]=useState(false),[q,setQ]=useState("");
  const load=async(s=start,e=end)=>{try{setLoading(true);setErr("");const r=await fetch("/api/overview?"+new URLSearchParams({start:s,end:e}),{cache:"no-store"});const j=await r.json();if(!r.ok)throw Error(j.error);setD(j)}catch(e:any){setErr(e.message||"Unable to load overview")}finally{setLoading(false)}};
  useEffect(()=>{const t=localStorage.getItem("ir-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");setTheme(t)},[]);
  useEffect(()=>{document.documentElement.dataset.theme=theme;try{localStorage.setItem("ir-theme",theme)}catch{}},[theme]);
@@ -33,7 +33,7 @@ export default function Overview(){
   <aside className={"sidebar"+(nav?" open":"")}><div className="brand"><div className="logo"><LogoMark/></div><div><b>Invalid Revenue</b><small>Revenue Intelligence</small></div></div>
    <div className="search"><Icon t="search" s={14}/><input placeholder="Search apps…" value={q} onChange={e=>setQ(e.target.value)}/></div>
    <div className="sideHeading">Workspace<span>{apps.length}</span></div>
-   <nav><button className="active" onClick={()=>setNav(false)}><Icon t="layers" s={17}/><span className="appName">Overview</span><span className="navChevron"><Icon t="arrow" s={14}/></span></button>
+   <nav><button className="active" onClick={()=>setNav(false)}><Icon t="home" s={17}/><span className="appName">Overview</span><span className="navChevron"><Icon t="arrow" s={14}/></span></button>
     {apps.map((a:any)=><button key={a.id} onClick={()=>{setNav(false);router.push("/apps/"+a.id)}}><Img name={a.name}/><span className="appName">{a.name}</span><span className="navChevron"><Icon t="arrow" s={14}/></span></button>)}</nav>
    <div className="sideFoot"><span className="live"/>Live revenue workspace</div>
   </aside>
