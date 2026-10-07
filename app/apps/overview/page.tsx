@@ -56,6 +56,5 @@ function KPI({label,value,meta,icon,tone}:{label:string;value:any;meta:string;ic
 function OverviewCard({app,onOpen}:{app:any;onOpen:()=>void}){const base=Number(app.dayTotals?.d0||0);return <article className="overviewApp card" onClick={onOpen}>
  <div className="overviewTop"><div className="appId"><Img name={app.name} large/><div><span className="eyebrow">App</span><h3>{app.name}</h3></div></div><div className="overviewRisk"><Status value={app.status}/><b className={app.loss>0?"danger":""}>{money(app.loss)}</b><span>at risk</span></div></div>
  <ChevronFlow compact rows={app.trend||[]}/>
- <div className="summary"><div><span>Initial</span><b>{money(app.initial)}</b></div><div><span>Latest</span><b>{money(app.latest)}</b></div><div><span>Adjustment</span><b className={app.loss>0?"danger":""}>{pct(app.rate)}</b></div></div>
  </article>}
 function Status({value}:{value:string}){return <span className={"badge "+String(value).toLowerCase()}><i/>{value}</span>}
