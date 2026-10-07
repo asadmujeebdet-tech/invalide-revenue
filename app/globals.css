@@ -320,3 +320,11 @@ tbody tr.selected td{background:var(--accent-soft)}tbody tr.pendRow td{color:var
 .tableSearch input::placeholder{color:var(--faint)}
 .adHead{gap:14px}.adHead .tableSearch{margin-left:auto}
 @media(max-width:700px){.tableSearch{min-width:0;width:180px}.adHead{align-items:flex-start}.adHead .tableSearch{margin-left:0}}
+
+/* ===== v9: snapshot metrics cleanup ===== */
+.detailKpis{grid-template-columns:repeat(4,minmax(0,1fr));width:100%}
+.chevWrap{overflow:hidden}.chevStrip{min-width:0;width:100%;overflow:visible}.chev{margin-left:0}
+.chev.rate{flex:0 0 84px;min-width:84px}.chev.rate b{font-size:14px}.chev.rate span,.chev.rate:before{display:none}.chev.val span{font-size:11px}
+@media(max-width:1280px){.detailKpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:900px){.detailKpis{grid-template-columns:repeat(2,minmax(0,1fr))}.chevStrip{overflow-x:auto;min-width:720px}.chevWrap{overflow-x:auto}}
+@media(max-width:600px){.detailKpis{grid-template-columns:1fr 1fr}}
