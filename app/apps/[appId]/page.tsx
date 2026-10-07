@@ -18,7 +18,7 @@ const themeFor=(name:string)=>{const n=name.toLowerCase();if(n.includes("antivir
 
 function Status({value}:{value:string}){return <span className={"badge "+String(value).toLowerCase()}><i/>{value}</span>}
 function Img({name,large=false}:{name:string;large?:boolean}){return <span className={"appIcon"+(large?" large":"")}><img src={imgFor(name,large)} alt="" referrerPolicy="no-referrer" onError={e=>{(e.currentTarget as HTMLImageElement).style.display="none"}}/><span className="fallbackIcon"><Icon t="layers" s={large?19:15}/></span></span>}
-function Tip({active,payload,label,asPct}:any){if(!active||!payload?.length)return null;return <div className="tip"><b>{label}</b>{payload.map((p:any)=><div key={p.dataKey}><i style={{background:p.color}}/><span>{p.name}</span><em>{asPct?pct(p.value):money(p.value)}</em></div>)}</div>}
+function Tip({active,payload,label,asPct}:any){if(!active||!payload?.length)return null;const base=payload.find((p:any)=>p.dataKey==="d0")?.value;return <div className="tip"><b>{label}</b>{payload.map((p:any)=><div key={p.dataKey}><i style={{background:p.color}}/><span>{p.name}</span><em style={{color:p.dataKey==="latest"&&base!=null&&Number(p.value)<Number(base)?"var(--danger)":undefined}}>{asPct?pct(p.value):money(p.value)}</em></div>)}</div>}
 
 function rangeFor(v:string){
  const now=new Date(),today=iso(now);
