@@ -37,7 +37,7 @@ export function useToast(){
   return{show,node:m?<div className="toast" role="status"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5 9-10"/></svg>{m}</div>:null}}
 
 const D5=["D0","D1","D2","D3","D4"];
-const usd=(n:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",notation:"compact",maximumFractionDigits:1}).format(n||0);
+const usd=(n:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:2}).format(n||0);
 /** Five snapshot values connected by exactly four arrows. Each arrow contains the like-for-like adjustment percentage. */
 export function ChevronFlow({rows,totals,compact=false,note=false}:{rows?:any[];totals?:any;compact?:boolean;note?:boolean}){
   const base=rows?rows.filter(r=>Number(r.d0||0)>0):null;
