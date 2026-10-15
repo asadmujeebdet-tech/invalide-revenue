@@ -9,7 +9,7 @@ const days=["D0","D1","D2","D3","D4"];
 const colors=["var(--c0)","var(--c1)","var(--c2)","var(--c3)","var(--c4)"];
 const ico:any={menu:"M3 6h18M3 12h18M3 18h18",search:"M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3",refresh:"M20 11a8 8 0 1 0 1 2M20 4v7h-7",moon:"M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z",sun:"M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4",download:"M12 3v12m0 0-4-4m4 4 4-4M4 21h16",home:"M3 10.5 12 3l9 7.5v9a1.5 1.5 0 0 1-1.5 1.5h-5v-6h-5v6h-5A1.5 1.5 0 0 1 3 19.5z",arrow:"M5 12h14m-6-6 6 6-6 6",alert:"M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z",trend:"M3 17l6-6 4 4 8-8",layers:"M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5",close:"M6 6l12 12M18 6 6 18",check:"M5 12l5 5 9-10"};
 const Icon=({t,s=16}:{t:string;s?:number})=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={ico[t]||ico.layers}/></svg>;
-const money=(n:any)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",notation:"compact",maximumFractionDigits:1}).format(Number(n)||0); const precise=(n:any)=>n==null?"—":"$"+Number(n).toFixed(6);
+const money=(n:any)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:2}).format(Number(n)||0); const precise=(n:any)=>n==null?"—":"$"+Number(n).toFixed(6);
 const pct=(n:any)=>n==null?"—":Number(n).toFixed(1)+"%";
 const spct=(n:any)=>n==null?"—":(n>0?"+":"")+Number(n).toFixed(1)+"%";
 const iso=isoLocal; // local date, not UTC (fixes off-by-one near midnight)
